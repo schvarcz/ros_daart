@@ -1,0 +1,53 @@
+teleop:
+  walk:
+    type: topic
+    message_type: geometry_msgs/Twist
+    topic_name: cmd_vel
+    deadman_buttons: [1]
+    axis_mappings:
+      -
+        axis: 1
+        target: linear.x
+        scale: 50
+        offset: -0.03
+      -
+        axis: 2
+        target: angular.z
+        scale: 50
+      -
+        axis: 0
+        target: linear.y
+        scale: 0.3
+
+  stop:
+    type: topic
+    message_type: geometry_msgs/Twist
+    topic_name: cmd_vel
+    deadman_buttons: [0, 1]
+    message_value:
+      -
+        target: linear.x
+        value: 0.0
+      -
+        target: angular.z
+        value: 0.0
+      -
+        target: linear.y
+        value: 0.0
+
+  surrender:
+    type: action
+    action_name: reach_pose
+    action_goal:
+      motion_name: surrender
+      duration: 3
+    buttons: [2, 4]
+
+  init:
+    type: action
+    action_name: play_motion
+    action_goal:
+      motion_name: home
+      duration:
+        secs: 3
+    buttons: [3, 5]
