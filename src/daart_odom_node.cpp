@@ -111,8 +111,11 @@ int main(int argc, char** argv){
 
   int left_encoder_prev = 0;
   int right_encoder_prev = 0;
-  double wheelsDistance = 15.;
-  double wheelsDiameter = 15.;
+  double wheelsDistance = 10.2;
+  double wheelsDiameter = 16.2;
+  double rate = 1.0/300.;
+  bool firstReading = true;
+
 
   ros::Time current_time, last_time;
   current_time = ros::Time::now();
@@ -139,9 +142,15 @@ int main(int argc, char** argv){
 
       ROS_DEBUG("left motor encoder = %hd\n",recv.left_encoder);
       ROS_DEBUG("right motor encoder = %hd\n",recv.right_encoder);
+      if(firstReading)
+      {
+        firstReading = false;
+        left_encoder_prev = recv.left_encoder;
+        right_encoder_prev = recv.right_encoder;
+      }
 
-      double LED = wheelsDiameter*(recv.left_encoder - left_encoder_prev);
-      double RED = wheelsDiameter*(recv.right_encoder - right_encoder_prev);
+      double LED = wheelsDiameter*rate*(recv.left_encoder - left_encoder_prev);
+      double RED = wheelsDiameter*rate*(recv.right_encoder - right_encoder_prev);
 
       double meanDistance = (LED+RED)/2.0;
 
