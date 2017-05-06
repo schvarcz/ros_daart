@@ -79,6 +79,9 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
 
 
 int file;
+double wheelsDistance = 10.2;
+double wheelsDiameter = 16.2;
+double maxVel = 40;
 
 void openConnectionTREX()
 {
@@ -105,15 +108,15 @@ void sendVel2TREX(double v1, double v2)
     I2C_input_packet to_send;
     bzero(&to_send, sizeof(I2C_input_packet));
 
-
-    to_send.left_motor_speed  = v1;
-    to_send.right_motor_speed = v2;
+    to_send.left_motor_speed  = round(v1);
+    to_send.right_motor_speed = round(v2);
 
 
     to_send.crc = crc8((unsigned char*) &to_send, sizeof(I2C_input_packet)-1, 0);
 
     if (write(file, &to_send, sizeof(I2C_input_packet)) != sizeof(I2C_input_packet))
        ROS_ERROR("Cannot write bytes");
+    ROS_INFO("Sent.");
 }
 
 void velCallback(const geometry_msgs::Twist vel_msg)
@@ -125,11 +128,13 @@ void velCallback(const geometry_msgs::Twist vel_msg)
   msgStream << "Vel: " << vel << "\t Omega:" << omega;
   ROS_INFO(msgStream.str().c_str());
 
-  double v1, v2, b = 10;
+  double v1, v2;
 
-  v2 = (vel*2 + omega*b) /2.0;
+  v2 = (vel*2 + omega*wheelsDistance) /2.0;
   v1 = vel*2  - v2;
 
+  v1 = min(v1, maxVel);
+  v2 = min(v2, maxVel);
   sendVel2TREX(v1, v2);
 }
 
