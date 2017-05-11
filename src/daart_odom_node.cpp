@@ -113,7 +113,7 @@ int main(int argc, char** argv){
   int right_encoder_prev = 0;
   double wheelsDistance = 10.2;
   double wheelsDiameter = 16.2;
-  double rate = 1.0/300.;
+  double rate = 1.0/30000.;
   bool firstReading = true;
 
 
@@ -149,8 +149,8 @@ int main(int argc, char** argv){
         right_encoder_prev = recv.right_encoder;
       }
 
-      double LED = wheelsDiameter*rate*(recv.left_encoder - left_encoder_prev);
-      double RED = wheelsDiameter*rate*(recv.right_encoder - right_encoder_prev);
+      double LED = rate*wheelsDiameter*(recv.left_encoder - left_encoder_prev);
+      double RED = rate*wheelsDiameter*(recv.right_encoder - right_encoder_prev);
 
       double meanDistance = (LED+RED)/2.0;
 
