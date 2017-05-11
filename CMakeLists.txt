@@ -132,6 +132,7 @@ add_library(crc
 ## Declare a C++ executable
 add_executable(daart_speed_control_node src/daart_speed_control_node.cpp)
 add_executable(daart_odom_node src/daart_odom_node.cpp)
+add_executable(daart_odom_node2 src/daart_odom_node2.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -139,6 +140,10 @@ add_executable(daart_odom_node src/daart_odom_node.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(daart_odom_node
+   crc
+   ${catkin_LIBRARIES}
+)
+target_link_libraries(daart_odom_node2
    crc
    ${catkin_LIBRARIES}
 )
