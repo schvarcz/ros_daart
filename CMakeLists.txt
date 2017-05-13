@@ -14,6 +14,22 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+## Find other dependencies are found with CMake's conventions
+
+#list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/)
+
+#set(IBEX_ROOT "/home/schvarcz/ibex-2.3.1-cplex/")
+#find_package(IbexLib)
+#if(NOT IBEX_FOUND)
+#  message(ERROR "Unable to find IbexLib. Maybe you need to set IBEX_ROOT ${IBEX_ROOT}")
+#endif()
+
+#set(VIBES_ROOT "/home/schvarcz/vibes-lib/")
+#find_package(VibesLib)
+#if(NOT VIBES_FOUND)
+#  message(ERROR "Unable to find VibesLib. Maybe you need to set VIBES_ROOT ${VIBES_ROOT}")
+#endif()
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -117,12 +133,12 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+#  ${IBEX_INCLUDE_DIRS}
+#  ${VIBES_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-add_library(crc
-  src/crc.c
-)
+add_library(crc src/crc.c)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -132,26 +148,41 @@ add_library(crc
 ## Declare a C++ executable
 add_executable(daart_speed_control_node src/daart_speed_control_node.cpp)
 add_executable(daart_odom_node src/daart_odom_node.cpp)
-add_executable(daart_odom_node2 src/daart_odom_node2.cpp)
+add_executable(daart_odom_imu_node src/daart_odom_imu_node.cpp)
+#add_executable(daart_odom_node2 src/daart_odom_node2.cpp)
+#add_executable(robot_pose_iv src/robot_pose_iv.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(daart_speed_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(daart_odom_node
-   crc
-   ${catkin_LIBRARIES}
-)
-target_link_libraries(daart_odom_node2
-   crc
-   ${catkin_LIBRARIES}
-)
 
 target_link_libraries(daart_speed_control_node
    crc
    ${catkin_LIBRARIES}
 )
+
+target_link_libraries(daart_odom_node
+   crc
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(daart_odom_imu_node
+   crc
+   ${catkin_LIBRARIES}
+)
+
+#target_link_libraries(daart_odom_node2
+#   crc
+#   ${catkin_LIBRARIES}
+#)
+
+#target_link_libraries(robot_pose_iv
+#   ${catkin_LIBRARIES}
+#   ${IBEX_LIBRARIES}
+#   ${VIBES_LIBRARIES}
+#)
 
 #############
 ## Install ##
