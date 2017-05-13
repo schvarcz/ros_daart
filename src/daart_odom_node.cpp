@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include "I2CIO.h"
-// #include <crc.h>
+#include <crc.h>
 
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
@@ -111,9 +111,9 @@ int main(int argc, char** argv){
 
   int left_encoder_prev = 0;
   int right_encoder_prev = 0;
-  double wheelsDistance = 10.2;
-  double wheelsDiameter = 16.2;
-  double rate = 1.0/30000.;
+  double wheelsDistance = 0.102;
+  double wheelsPerimeter = 0.162;
+  double rate = 1.0/300.;
   bool firstReading = true;
 
 
@@ -149,8 +149,8 @@ int main(int argc, char** argv){
         right_encoder_prev = recv.right_encoder;
       }
 
-      double LED = rate*wheelsDiameter*(recv.left_encoder - left_encoder_prev);
-      double RED = rate*wheelsDiameter*(recv.right_encoder - right_encoder_prev);
+      double LED = rate*wheelsPerimeter*(recv.left_encoder - left_encoder_prev);
+      double RED = rate*wheelsPerimeter*(recv.right_encoder - right_encoder_prev);
 
       double meanDistance = (LED+RED)/2.0;
 
@@ -159,7 +159,7 @@ int main(int argc, char** argv){
       double dt = (current_time - last_time).toSec();
       double dx = meanDistance*cos(th);
       double dy = meanDistance*sin(th);
-      double omega = (RED-LED)/wheelsDistance;
+      double omega = atan2((RED-LED), wheelsDistance);
 
       x += dx;
       y += dy;
