@@ -1,6 +1,6 @@
 <launch>
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find daart)/config/config-rosremote.rviz" />
 	<node pkg="tf" type="static_transform_publisher" name="odom2map"  args="0 0 0 0 0 0  map       odom          1000" />
-	<node pkg="tf" type="static_transform_publisher" name="laser2map" args="0 0 0 0 0 0  base_link laser         1000" />
+	<node pkg="tf" type="static_transform_publisher" name="laser2map" args="0 0 0 0 0 0  base_link laser 				 1000" />
 	<node pkg="tf" type="static_transform_publisher" name="imu2map"   args="0 0 0 0 0 0  base_link base_imu_link 1000" />
 </launch>

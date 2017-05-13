@@ -1,9 +1,10 @@
 <launch>
-	<arg name="bagfile" default="/home/schvarcz/Desktop/2017-05-11-12-33-00.bag" />
+  <arg name="bagfile" default="/home/schvarcz/Dropbox/Doutorado-ENSTA/Daart/DaartTests/2017-05-13/2017-05-13-16-26-16-atan2.bag" />
 	<param name="use_sim_time" value="True"/>
 	<node pkg="rqt_bag" type="rqt_bag" name="rqt_bag" output="screen" args="$(arg bagfile) --clock"  />
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find daart)/config/config-rosbag.rviz" />
 	<node pkg="tf" type="static_transform_publisher" name="odom2map" args="0 0 0 0 0 0  map odom 1000" />
+	<node pkg="tf" type="static_transform_publisher" name="odomimu2map" args="0 0 0 0 0 0  map odom_imu 1000" />
 	<node pkg="tf" type="static_transform_publisher" name="laser2map" args="0 0 0 0 0 0  base_link laser 1000" />
 	<node pkg="tf" type="static_transform_publisher" name="imu2map" args="0 0 0 0 0 0  base_link base_imu_link 1000" />
 </launch>
