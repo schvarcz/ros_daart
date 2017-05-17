@@ -111,8 +111,8 @@ int main(int argc, char** argv){
 
   int left_encoder_prev = 0;
   int right_encoder_prev = 0;
-  double wheelsDistance = 0.102;
-  double wheelsPerimeter = 0.162;
+  double wheelsDistance = 0.102; //25.5
+  double wheelsPerimeter = 0.162;// 40
   double rate = 1.0/300.;
   bool firstReading = true;
 
@@ -147,6 +147,7 @@ int main(int argc, char** argv){
         firstReading = false;
         left_encoder_prev = recv.left_encoder;
         right_encoder_prev = recv.right_encoder;
+        last_time = current_time;
       }
 
       double LED = rate*wheelsPerimeter*(recv.left_encoder - left_encoder_prev);
@@ -166,7 +167,6 @@ int main(int argc, char** argv){
       th += omega;
 
       double vx = meanDistance / dt;
-      double vy = 0;
       omega /= dt;
 
       left_encoder_prev = recv.left_encoder;
@@ -203,7 +203,7 @@ int main(int argc, char** argv){
       //set the velocity
       odom.child_frame_id = "base_link";
       odom.twist.twist.linear.x = vx;
-      odom.twist.twist.linear.y = vy;
+      odom.twist.twist.linear.y = 0.0;
       odom.twist.twist.angular.z = omega;
 
       //publish the message
