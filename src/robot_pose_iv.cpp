@@ -7,6 +7,7 @@
 #include <iostream>
 
 using namespace ros;
+using namespace std;
 using namespace ibex;
 
 ros::Publisher odom_pub;
