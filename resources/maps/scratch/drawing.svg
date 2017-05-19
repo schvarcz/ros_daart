@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="775"
+   height="746"
+   viewBox="0 0 775.00001 746.00001"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="drawing.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="-147.56449"
+     inkscape:cy="575.3467"
+     inkscape:document-units="px"
+     inkscape:current-layer="g4256"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1056"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     units="px" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-306.36216)">
+    <g
+       id="g4256"
+       transform="matrix(0.8,0,0,0.8,0,210.47239)">
+      <image
+         width="968.75"
+         height="932.5"
+         preserveAspectRatio="none"
+         xlink:href="file:///home/schvarcz/catkin_ws/src/stdr_simulator/stdr_resources/maps/sparse_obstacles.png"
+         id="image4144"
+         x="-2.2808648e-09"
+         y="119.86221"
+         sodipodi:absref="/home/schvarcz/catkin_ws/src/stdr_simulator/stdr_resources/maps/sparse_obstacles.png" />
+      <g
+         style="opacity:0.98000004"
+         id="g4253">
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#e60000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           d="m 30.854354,148.89012 0,479.65337 406.377816,0.783 0,62.85714 -405.423676,1.45396 -1.29332,323.31141 460.742736,0.7576 -0.50508,-186.13265 67.90791,0.25254 0.50507,184.45901 379.74003,1.0102 -0.50508,-868.15305 -219.14828,-0.50507 -0.50508,546.13271 -63.69399,-1.51523 -0.67839,-543.92858 z"
+           id="path4147"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccccccccccccccc" />
+      </g>
+    </g>
+  </g>
+</svg>

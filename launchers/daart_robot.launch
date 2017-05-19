@@ -1,15 +1,21 @@
 <launch>
-    <node pkg="cv_camera" type="cv_camera_node" name="camera">
+    <!-- <node pkg="cv_camera" type="cv_camera_node" name="camera">
         <param name="image_width" value="640"/>
         <param name="image_height" value="480"/>
         <param name="rate" value="20"/>
+    </node> -->
+    <node pkg="urg_node" type="urg_node" name="daart_hokuyo" output="screen">
+        <!-- <param name="calibrate_time" value="true"/> -->
     </node>
-    <node pkg="urg_node" type="urg_node" name="daart_hokuyo" />
-    <node pkg="daart" type="daart_odom_node" name="daart_odom_node" />
+    <node pkg="daart" type="daart_odom_node" name="daart_odom_node" output="screen" />
     <!--<node pkg="daart" type="daart_odom_imu_node" name="daart_odom_imu_node" />-->
     <!-- <node pkg="daart" type="daart_odom_node2" name="daart_odom_node2" /> -->
-    <node pkg="daart" type="daart_speed_control_node" name="daart_speed_control_node" />
+    <node pkg="daart" type="daart_speed_control_node" name="daart_speed_control_node" output="screen" />
     <node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" output="screen">
         <rosparam file="$(find daart)/config/razor.yaml" command="load"/>
     </node>
+
+  	<node pkg="tf" type="static_transform_publisher" name="odom2map"  args="7 13 0 0 0 0  map       odom          1000" />
+  	<node pkg="tf" type="static_transform_publisher" name="laser2map" args="0 0 0 0 0 0   base_link laser 				 1000" />
+  	<node pkg="tf" type="static_transform_publisher" name="imu2map"   args="0 0 0 0 0 0   base_link base_imu_link 1000" />
 </launch>

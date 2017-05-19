@@ -1,0 +1,32 @@
+<robot>
+  <robot_specifications>
+    <footprint>
+      <footprint_specifications>
+        <radius>
+          0.15
+        </radius>
+      </footprint_specifications>
+    </footprint>
+    <initial_pose>
+      <x>
+        0
+      </x>
+      <y>
+        0
+      </y>
+      <theta>
+        0
+      </theta>
+    </initial_pose>
+    <kinematic>
+      <filename>
+        kinematic_models/omni_kinematic.xml
+      </filename>
+    </kinematic>
+    <laser>
+      <filename>
+        laser_sensors/hokuyo/hokuyo_URG_04LX_UG01.xml
+      </filename>
+    </laser>
+  </robot_specifications>
+</robot>
