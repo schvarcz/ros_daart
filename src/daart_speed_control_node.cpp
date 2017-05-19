@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,7 @@
 #include <sys/ioctl.h>
 #include <string.h>
 
+#include <signal.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <linux/i2c-dev.h>
@@ -79,9 +81,9 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
 
 
 int file;
-double wheelsDistance = 10.2;
-double wheelsDiameter = 16.2;
-double maxVel = 40;
+double wheelsDistance = 0.255;
+double wheelsDiameter = 0.40;
+double minVel = 15, maxVel = 25;
 
 void openConnectionTREX()
 {
@@ -108,8 +110,13 @@ void sendVel2TREX(double v1, double v2)
     I2C_input_packet to_send;
     bzero(&to_send, sizeof(I2C_input_packet));
 
-    to_send.left_motor_speed  = round(v1);
-    to_send.right_motor_speed = round(v2);
+    double rate = 0.1777777778;
+    to_send.left_motor_speed  = round(5.*v1/rate +10.);
+    to_send.right_motor_speed = round(5.*v2/rate +10.);
+    if (v1 == 0.0)
+      to_send.left_motor_speed  = 0;
+    if (v2 == 0.0)
+      to_send.right_motor_speed  = 0;
 
 
     to_send.crc = crc8((unsigned char*) &to_send, sizeof(I2C_input_packet)-1, 0);
@@ -119,7 +126,9 @@ void sendVel2TREX(double v1, double v2)
     ROS_INFO("Sent.");
 }
 
-void velCallback(const geometry_msgs::Twist vel_msg)
+double v1Desired = 0.0, v2Desired = 0.0, v1 = 0.0, v2 = 0.0;
+double bumping = false;
+void processTwist(const geometry_msgs::Twist vel_msg)
 {
   double vel = vel_msg.linear.x;
   double omega = vel_msg.angular.z;
@@ -128,14 +137,88 @@ void velCallback(const geometry_msgs::Twist vel_msg)
   msgStream << "Vel: " << vel << "\t Omega:" << omega;
   ROS_INFO(msgStream.str().c_str());
 
-  double v1, v2;
-
   v2 = (vel*2 + omega*wheelsDistance) /2.0;
   v1 = vel*2  - v2;
 
   v1 = min(v1, maxVel);
   v2 = min(v2, maxVel);
+  v1Desired = v1;
+  v2Desired = v2;
+  bumping = false;
   sendVel2TREX(v1, v2);
+  cout << v1 << " - " << v2 << endl;
+}
+
+geometry_msgs::Twist old_vel_msg;
+
+void velCallback(const geometry_msgs::Twist vel_msg)
+{
+  old_vel_msg = vel_msg;
+  while(bumping)
+  {
+    return;
+  }
+  processTwist(vel_msg);
+}
+
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+void odomCallback(const nav_msgs::Odometry odom)
+{
+  if( v1Desired == 0.0 && v2Desired == 0.0)
+  {
+    return;
+  }
+
+  if (odom.twist.twist.linear.x == 0.0 && v1Desired != -v2Desired && v1Desired != 0.0 && v2Desired != 0.0)
+  {
+      bumping = true;
+      v1 = v1 + 1*sgn(v1);
+      v2 = v2 + 1*sgn(v2);
+      v1 = min(v1, maxVel);
+      v2 = min(v2, maxVel);
+      sendVel2TREX(v1, v2);
+      ROS_INFO("Vel: %f", odom.twist.twist.linear.x);
+      ROS_INFO("Bumping, v1: %f, v2: %f",v1, v2);
+  }
+  else if (odom.twist.twist.angular.z == 0.0 && v1Desired != v2Desired)
+  {
+      bumping = true;
+      if(sgn(v1) != sgn(v2))
+      {
+        double oldD = fabs(v2 - v1);
+        double newD = oldD+1;
+        v1 = newD*( v1/oldD );
+        v2 = newD*( v2/oldD );
+      }
+      else if(fabs(v1Desired) > fabs(v2Desired))
+        v1 = v1 + 1*sgn(v1);
+      else
+        v2 = v2 + 1*sgn(v2);
+
+      v1 = min(v1, maxVel);
+      v2 = min(v2, maxVel);
+      sendVel2TREX(v1, v2);
+      ROS_INFO("Omega: %f", odom.twist.twist.angular.z);
+      ROS_INFO("Bumping, v1: %f, v2: %f",v1, v2);
+  }
+  else
+  {
+      if(bumping)
+      {
+        bumping = false;
+        processTwist(old_vel_msg);
+      }
+  }
+}
+
+void shuttingdown(int signal)
+{
+  sendVel2TREX(0.0, 0.0);
+  ROS_INFO("Speed control shutting down");
+  ros::shutdown();
 }
 
 int main(int argc, char **argv)
@@ -147,7 +230,11 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   ROS_INFO("Hello world!");
-  ros::Subscriber sub = n.subscribe("/cmd_vel", 0, velCallback);
+  std::string ns = ros::this_node::getNamespace();
+  ros::Subscriber sub1 = n.subscribe(ns+"/cmd_vel", 0, velCallback);
+  ros::Subscriber sub2 = n.subscribe(ns+"/odom", 0, odomCallback);
 
+  signal(SIGINT, shuttingdown);
   ros::spin();
+  return 0;
 }

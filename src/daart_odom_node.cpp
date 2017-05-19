@@ -102,17 +102,18 @@ int main(int argc, char** argv){
   ros::init(argc, argv, "daart_odom_node");
   openConnectionTREX();
   ros::NodeHandle n;
-  ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom", 50);
+  std::string ns = ros::this_node::getNamespace();
+  ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>(ns+"/odom", 50);
   tf::TransformBroadcaster odom_broadcaster;
 
   double x = 0.0;
   double y = 0.0;
   double th = 0.0;
 
-  int left_encoder_prev = 0;
-  int right_encoder_prev = 0;
-  double wheelsDistance = 0.102; //25.5
-  double wheelsPerimeter = 0.162;// 40
+  int16_t left_encoder_prev = 0;
+  int16_t right_encoder_prev = 0;
+  double wheelsDistance = 0.255; //25.5
+  double wheelsPerimeter = 0.40;// 40
   double rate = 1.0/300.;
   bool firstReading = true;
 
@@ -121,10 +122,8 @@ int main(int argc, char** argv){
   current_time = ros::Time::now();
   last_time = ros::Time::now();
 
-  ros::Rate r(1.0);
+  ros::Rate r(30);
   while(n.ok()){
-    ros::spinOnce();               // check for incoming messages
-    current_time = ros::Time::now();
 
 
    //Read from T-Rex
@@ -137,23 +136,32 @@ int main(int argc, char** argv){
    else
    {
       crc = crc8((uint8_t*)&recv, sizeof(I2C_output_packet)-1, 0);
-      ROS_DEBUG("expected crc: %hhu\n", crc);
+      ROS_DEBUG("expected crc: %hhu", crc);
       ROS_DEBUG("got: %hhu\n", recv.crc);
 
-      ROS_DEBUG("left motor encoder = %hd\n",recv.left_encoder);
+      ROS_DEBUG("left motor encoder = %hd",recv.left_encoder);
       ROS_DEBUG("right motor encoder = %hd\n",recv.right_encoder);
+      current_time = ros::Time::now();
+
+      int16_t left_encoder_cur = recv.left_encoder;
+      int16_t right_encoder_cur = recv.right_encoder;
       if(firstReading)
       {
         firstReading = false;
-        left_encoder_prev = recv.left_encoder;
-        right_encoder_prev = recv.right_encoder;
+        left_encoder_prev = left_encoder_cur;
+        right_encoder_prev = right_encoder_cur;
         last_time = current_time;
       }
 
-      double LED = rate*wheelsPerimeter*(recv.left_encoder - left_encoder_prev);
-      double RED = rate*wheelsPerimeter*(recv.right_encoder - right_encoder_prev);
+      double LED = rate*wheelsPerimeter*(left_encoder_cur - left_encoder_prev);
+      double RED = rate*wheelsPerimeter*(right_encoder_cur - right_encoder_prev);
 
       double meanDistance = (LED+RED)/2.0;
+      // ROS_DEBUG("LED = %f",LED);
+      // ROS_DEBUG("RED = %f",RED);
+      // ROS_DEBUG("meanDistance = %f",meanDistance);
+      // if(RED == 0.0 || LED == 0.0)
+      //   meanDistance = 0.0;
 
 
       //compute odometry in a typical way given the velocities of the robot
@@ -162,15 +170,19 @@ int main(int argc, char** argv){
       double dy = meanDistance*sin(th);
       double omega = atan2((RED-LED), wheelsDistance);
 
+      // ROS_DEBUG("dx = %f",x);
+      // ROS_DEBUG("dy = %f",y);
       x += dx;
       y += dy;
       th += omega;
 
+      // ROS_DEBUG("x = %f",x);
+      // ROS_DEBUG("y = %f\n",y);
       double vx = meanDistance / dt;
       omega /= dt;
 
-      left_encoder_prev = recv.left_encoder;
-      right_encoder_prev = recv.right_encoder;
+      left_encoder_prev = left_encoder_cur;
+      right_encoder_prev = right_encoder_cur;
 
       //since all odometry is 6DOF we'll need a quaternion created from yaw
       geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
@@ -210,6 +222,7 @@ int main(int argc, char** argv){
       odom_pub.publish(odom);
 
       last_time = current_time;
+      ros::spinOnce();               // check for incoming messages
       r.sleep();
     }
   }
