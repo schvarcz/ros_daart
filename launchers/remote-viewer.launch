@@ -1,4 +1,4 @@
 <launch>
-  <arg name="rviz_config" default="$(find daart)/config/config-pathplanning.rviz" />
+  <arg name="rviz_config" default="$(find daart)/config/config-remote.rviz" />
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config)" />
 </launch>
