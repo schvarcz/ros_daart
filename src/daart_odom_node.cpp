@@ -78,6 +78,9 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
 
 int file;
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
 void openConnectionTREX()
 {
     char *filename = "/dev/i2c-2";
@@ -119,8 +122,6 @@ int main(int argc, char** argv){
 
 
   ros::Time current_time, last_time;
-  current_time = ros::Time::now();
-  last_time = ros::Time::now();
 
   ros::Rate r(30);
   while(n.ok()){
@@ -153,12 +154,21 @@ int main(int argc, char** argv){
         last_time = current_time;
       }
 
-      double LED = rate*wheelsPerimeter*(left_encoder_cur - left_encoder_prev);
-      double RED = rate*wheelsPerimeter*(right_encoder_cur - right_encoder_prev);
+      int LEDD = (left_encoder_cur - left_encoder_prev);
+      int REDD = (right_encoder_cur - right_encoder_prev);
+
+      if(abs(LEDD)>60000)
+        LEDD = -sgn(LEDD)*(65536 - abs(LEDD));
+
+      if(abs(REDD)>60000)
+        REDD = -sgn(REDD)*(65536 - abs(REDD));
+
+      double LED = rate*wheelsPerimeter*LEDD;
+      double RED = rate*wheelsPerimeter*REDD;
 
       double meanDistance = (LED+RED)/2.0;
-      // ROS_DEBUG("LED = %f",LED);
-      // ROS_DEBUG("RED = %f",RED);
+      ROS_INFO("LED = %f",LED);
+      ROS_INFO("RED = %f",RED);
       // ROS_DEBUG("meanDistance = %f",meanDistance);
       // if(RED == 0.0 || LED == 0.0)
       //   meanDistance = 0.0;
@@ -180,9 +190,6 @@ int main(int argc, char** argv){
       // ROS_DEBUG("y = %f\n",y);
       double vx = meanDistance / dt;
       omega /= dt;
-
-      left_encoder_prev = left_encoder_cur;
-      right_encoder_prev = right_encoder_cur;
 
       //since all odometry is 6DOF we'll need a quaternion created from yaw
       geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
@@ -221,6 +228,8 @@ int main(int argc, char** argv){
       //publish the message
       odom_pub.publish(odom);
 
+      left_encoder_prev = left_encoder_cur;
+      right_encoder_prev = right_encoder_cur;
       last_time = current_time;
       ros::spinOnce();               // check for incoming messages
       r.sleep();
