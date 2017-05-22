@@ -7,11 +7,29 @@ teleop:
       -
         axis: 1
         target: linear.x
-        scale: 1.25
+        scale: 2
       -
         axis: 2
         target: angular.z
-        scale: 20
+        scale: 10
+      -
+        axis: 0
+        target: linear.y
+        scale: 0.0
+  rolling:
+    type: topic
+    message_type: geometry_msgs/Twist
+    topic_name: cmd_vel
+    deadman_buttons: [1]
+    axis_mappings:
+      -
+        axis: 1
+        target: linear.x
+        scale: 2
+      -
+        axis: 2
+        target: angular.z
+        scale: 30
       -
         axis: 0
         target: linear.y
