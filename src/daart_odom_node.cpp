@@ -167,8 +167,8 @@ int main(int argc, char** argv){
       double RED = rate*wheelsPerimeter*REDD;
 
       double meanDistance = (LED+RED)/2.0;
-      ROS_INFO("LED = %f",LED);
-      ROS_INFO("RED = %f",RED);
+      ROS_DEBUG("LED = %f",LED);
+      ROS_DEBUG("RED = %f",RED);
       // ROS_DEBUG("meanDistance = %f",meanDistance);
       // if(RED == 0.0 || LED == 0.0)
       //   meanDistance = 0.0;
@@ -180,6 +180,8 @@ int main(int argc, char** argv){
       double dy = meanDistance*sin(th);
       double omega = atan2((RED-LED), wheelsDistance);
 
+      // if (LED <=0 && RED <= 0)
+      //   omega = 0;
       // ROS_DEBUG("dx = %f",x);
       // ROS_DEBUG("dy = %f",y);
       x += dx;

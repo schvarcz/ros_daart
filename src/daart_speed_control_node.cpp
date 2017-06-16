@@ -78,12 +78,21 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
     return crc;
 }
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 
 
 int file;
 double wheelsDistance = 0.255;
 double wheelsDiameter = 0.40;
 double minVel = 15, maxVel = 25;
+double shiftMoving = 0, shiftInPlace = 13.0;
+double scaleMoving = 4.0, scaleInPlace = 1.0;
+
+double v1Desired = 0.0, v2Desired = 0.0, v1 = 0.0, v2 = 0.0;
+double bumping = false;
 
 void openConnectionTREX()
 {
@@ -126,12 +135,18 @@ void sendVel2TREX(double v1, double v2)
     ROS_INFO("Sent.");
 }
 
-double v1Desired = 0.0, v2Desired = 0.0, v1 = 0.0, v2 = 0.0;
-double bumping = false;
 void processTwist(const geometry_msgs::Twist vel_msg)
 {
   double vel = vel_msg.linear.x;
   double omega = vel_msg.angular.z;
+
+  if (omega != 0.0)
+  {
+      if(vel_msg.linear.x == 0.0)
+        omega = omega*scaleInPlace + shiftInPlace*sgn(omega);
+      else
+        omega = omega*scaleMoving + shiftMoving*sgn(omega);
+  }
 
   stringstream msgStream;
   msgStream << "Vel: " << vel << "\t Omega:" << omega;
@@ -142,6 +157,11 @@ void processTwist(const geometry_msgs::Twist vel_msg)
 
   v1 = min(v1, maxVel);
   v2 = min(v2, maxVel);
+  if (v1Desired ==0.0 || v1Desired ==0.0)
+  {
+    sendVel2TREX(1.2, 1.2);
+    usleep(500);
+  }
   v1Desired = v1;
   v2Desired = v2;
   bumping = false;
@@ -161,12 +181,9 @@ void velCallback(const geometry_msgs::Twist vel_msg)
   processTwist(vel_msg);
 }
 
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-
 void odomCallback(const nav_msgs::Odometry odom)
 {
+  bool reset = true;
   if( v1Desired == 0.0 && v2Desired == 0.0)
   {
     return;
@@ -175,6 +192,7 @@ void odomCallback(const nav_msgs::Odometry odom)
   if (odom.twist.twist.linear.x == 0.0 && v1Desired != -v2Desired && v1Desired != 0.0 && v2Desired != 0.0)
   {
       bumping = true;
+      reset = false;
       v1 = v1 + 1*sgn(v1);
       v2 = v2 + 1*sgn(v2);
       v1 = min(v1, maxVel);
@@ -183,20 +201,23 @@ void odomCallback(const nav_msgs::Odometry odom)
       ROS_INFO("Vel: %f", odom.twist.twist.linear.x);
       ROS_INFO("Bumping, v1: %f, v2: %f",v1, v2);
   }
-  else if (odom.twist.twist.angular.z == 0.0 && v1Desired != v2Desired)
+
+  if (odom.twist.twist.angular.z == 0.0 && v1Desired != v2Desired)
   {
       bumping = true;
-      if(sgn(v1) != sgn(v2))
-      {
-        double oldD = fabs(v2 - v1);
-        double newD = oldD+1;
-        v1 = newD*( v1/oldD );
-        v2 = newD*( v2/oldD );
-      }
-      else if(fabs(v1Desired) > fabs(v2Desired))
-        v1 = v1 + 1*sgn(v1);
+      reset = false;
+      // if(sgn(v1) != sgn(v2))
+      // {
+      //   double oldD = fabs(v2 - v1);
+      //   double newD = oldD+1;
+      //   v1 = newD*( v1/oldD );
+      //   v2 = newD*( v2/oldD );
+      // }
+      // else
+      if(fabs(v1Desired) > fabs(v2Desired))
+         v1 = v1 + 1*sgn(v1);
       else
-        v2 = v2 + 1*sgn(v2);
+         v2 = v2 + 1*sgn(v2);
 
       v1 = min(v1, maxVel);
       v2 = min(v2, maxVel);
@@ -204,7 +225,8 @@ void odomCallback(const nav_msgs::Odometry odom)
       ROS_INFO("Omega: %f", odom.twist.twist.angular.z);
       ROS_INFO("Bumping, v1: %f, v2: %f",v1, v2);
   }
-  else
+
+  if(reset)
   {
       if(bumping)
       {
