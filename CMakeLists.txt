@@ -152,6 +152,7 @@ add_executable(daart_odom_imu_node src/daart_odom_imu_node.cpp)
 add_executable(daart_odom_node2 src/daart_odom_node2.cpp)
 add_executable(daart_rotate src/daart_rotate.cpp)
 add_executable(daart_waypoints src/daart_waypoints.cpp)
+add_executable(daart_waypoints2 src/daart_waypoints2.cpp)
 add_executable(daart_random_walk src/daart_random_walk.cpp)
 # add_executable(robot_pose_iv src/robot_pose_iv.cpp)
 
@@ -187,6 +188,10 @@ target_link_libraries(daart_rotate
 )
 
 target_link_libraries(daart_waypoints
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(daart_waypoints2
    ${catkin_LIBRARIES}
 )
 
