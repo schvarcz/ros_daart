@@ -100,7 +100,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "daart_random_walk");
 
   ros::NodeHandle n;
-  std::string ns = "/robot0"; //ros::this_node::getNamespace();
+  std::string ns = ros::this_node::getNamespace();
   ros::Subscriber sub1 = n.subscribe(ns+"/odom", 100, odomCallback);
   ros::Subscriber sub2 = n.subscribe(ns+"/laser_0", 100, onNewScan);
   ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);

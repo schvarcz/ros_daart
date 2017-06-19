@@ -81,6 +81,7 @@ int file;
 template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
+
 void openConnectionTREX()
 {
     char *filename = "/dev/i2c-2";

@@ -44,7 +44,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "daart_waypoints");
 
   ros::NodeHandle n;
-  std::string ns = "/robot0"; //ros::this_node::getNamespace();
+  std::string ns = ros::this_node::getNamespace();
   ros::Subscriber sub = n.subscribe(ns+"/odom", 100, odomCallback);
   ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
   bool sended = false;

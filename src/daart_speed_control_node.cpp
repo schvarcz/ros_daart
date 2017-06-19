@@ -78,11 +78,10 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
     return crc;
 }
 
-template <typename T> int sgn(T val) {
+template <typename T> int sgn(T val)
+{
     return (T(0) < val) - (val < T(0));
 }
-
-
 
 int file;
 double wheelsDistance = 0.255;
@@ -260,7 +259,7 @@ int main(int argc, char **argv)
   ROS_INFO("Hello world!");
   std::string ns = ros::this_node::getNamespace();
   ros::Subscriber sub1 = n.subscribe(ns+"/cmd_vel", 0, velCallback);
-  ros::Subscriber sub2 = n.subscribe(ns+"/odom", 0, odomCallback);
+  //ros::Subscriber sub2 = n.subscribe(ns+"/odom", 0, odomCallback);
 
   signal(SIGINT, shuttingdown);
   ros::spin();
