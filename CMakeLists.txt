@@ -151,6 +151,7 @@ add_executable(daart_odom_node src/daart_odom_node.cpp)
 add_executable(daart_odom_imu_node src/daart_odom_imu_node.cpp)
 add_executable(daart_odom_node2 src/daart_odom_node2.cpp)
 add_executable(daart_rotate src/daart_rotate.cpp)
+add_executable(daart_waypoints src/daart_waypoints.cpp)
 # add_executable(robot_pose_iv src/robot_pose_iv.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -181,6 +182,10 @@ target_link_libraries(daart_odom_node2
 )
 
 target_link_libraries(daart_rotate
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(daart_waypoints
    ${catkin_LIBRARIES}
 )
 
