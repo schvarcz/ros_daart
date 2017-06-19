@@ -87,9 +87,9 @@ template <typename T> int sgn(T val) {
 int file;
 double wheelsDistance = 0.255;
 double wheelsDiameter = 0.40;
-double minVel = 15, maxVel = 25;
-double shiftMoving = 0, shiftInPlace = 13.0;
-double scaleMoving = 4.0, scaleInPlace = 1.0;
+double minVel = 2.5, maxVel = 3;
+double shiftMoving = 0, shiftInPlace = 0.0;
+double scaleMoving = 1.0, scaleInPlace = 1.0;
 
 double v1Desired = 0.0, v2Desired = 0.0, v1 = 0.0, v2 = 0.0;
 double bumping = false;
@@ -120,8 +120,8 @@ void sendVel2TREX(double v1, double v2)
     bzero(&to_send, sizeof(I2C_input_packet));
 
     double rate = 0.1777777778;
-    to_send.left_motor_speed  = round(5.*v1/rate +10.);
-    to_send.right_motor_speed = round(5.*v2/rate +10.);
+    to_send.left_motor_speed  = round(5.*v1/rate +10.*sgn(v1));
+    to_send.right_motor_speed = round(5.*v2/rate +10.*sgn(v2));
     if (v1 == 0.0)
       to_send.left_motor_speed  = 0;
     if (v2 == 0.0)
@@ -157,11 +157,17 @@ void processTwist(const geometry_msgs::Twist vel_msg)
 
   v1 = min(v1, maxVel);
   v2 = min(v2, maxVel);
-  if (v1Desired ==0.0 || v1Desired ==0.0)
-  {
-    sendVel2TREX(1.2, 1.2);
-    usleep(500);
-  }
+
+  if (v1 != 0.0)
+    v1 = max(v1*sgn(v1), minVel)*sgn(v1);
+
+  if (v2 != 0.0)
+    v2 = max(v2*sgn(v2), minVel)*sgn(v2);
+  // if (v1Desired ==0.0 || v2Desired ==0.0)
+  // {
+  //   sendVel2TREX(1.2, 1.2);
+  //   usleep(500);
+  // }
   v1Desired = v1;
   v2Desired = v2;
   bumping = false;
@@ -174,7 +180,7 @@ geometry_msgs::Twist old_vel_msg;
 void velCallback(const geometry_msgs::Twist vel_msg)
 {
   old_vel_msg = vel_msg;
-  while(bumping)
+  if (bumping)
   {
     return;
   }
