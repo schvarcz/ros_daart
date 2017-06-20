@@ -49,11 +49,11 @@ const uint8_t crc_table[256] = {
     0x2BU,0x75U,0x97U,0xC9U,0x4AU,0x14U,0xF6U,0xA8U,
     0x74U,0x2AU,0xC8U,0x96U,0x15U,0x4BU,0xA9U,0xF7U,
     0xB6U,0xE8U,0x0AU,0x54U,0xD7U,0x89U,0x6BU,0x35U,
-    };
+};
 
 uint8_t crc8(unsigned char* data, int len, uint8_t crc){
 
-  /*
+    /*
     Automatically generated CRC function
     polynomial: 0x131, bit reverse algorithm
     0x131 == Dallas polynom, generated with python crcmod
@@ -78,7 +78,8 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
 
 int file;
 
-template <typename T> int sgn(T val) {
+template <typename T> int sgn(T val)
+{
     return (T(0) < val) - (val < T(0));
 }
 
@@ -89,153 +90,153 @@ void openConnectionTREX()
 
     if ( (file = open(filename,O_RDWR)) < 0 )
     {
-       ROS_ERROR("Failed to open i2c bus. Shutdown.");
-       ros::shutdown();
+        ROS_ERROR("Failed to open i2c bus. Shutdown.");
+        ros::shutdown();
     }
 
     ioctl(file,I2C_TENBIT, 0);
 
     if ( ioctl(file,I2C_SLAVE, addr) < 0 )
     {
-       ROS_ERROR("Failed to talk to T-Rex. Shutdown.");
-       ros::shutdown();
+        ROS_ERROR("Failed to talk to T-Rex. Shutdown.");
+        ros::shutdown();
     }
 }
 
-int main(int argc, char** argv){
-  ros::init(argc, argv, "daart_odom_node");
-  openConnectionTREX();
-  ros::NodeHandle n;
-  std::string ns = ros::this_node::getNamespace();
-  ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>(ns+"/odom", 50);
-  tf::TransformBroadcaster odom_broadcaster;
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "daart_odom_node");
+    openConnectionTREX();
+    ros::NodeHandle n;
+    std::string ns = ros::this_node::getNamespace();
+    ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>(ns+"/odom", 50);
+    tf::TransformBroadcaster odom_broadcaster;
 
-  double x = 0.0;
-  double y = 0.0;
-  double th = 0.0;
+    double x = 0.0;
+    double y = 0.0;
+    double th = 0.0;
 
-  int16_t left_encoder_prev = 0;
-  int16_t right_encoder_prev = 0;
-  double wheelsDistance = 0.255; //25.5
-  double wheelsPerimeter = 0.40;// 40
-  double rate = 1.0/300.;
-  bool firstReading = true;
-
-
-  ros::Time current_time, last_time;
-
-  ros::Rate r(30);
-  while(n.ok()){
+    int16_t left_encoder_prev = 0;
+    int16_t right_encoder_prev = 0;
+    double wheelsDistance = 0.255; //25.5
+    double wheelsPerimeter = 0.40;// 40
+    double rate = 1.0/300.;
+    bool firstReading = true;
 
 
-   //Read from T-Rex
-   I2C_output_packet recv;
-   uint8_t crc = 0;
-   if (read(file,&recv,sizeof(I2C_output_packet)) != sizeof(I2C_output_packet))
-   {
-      ROS_ERROR("Cannot read bytes");
-   }
-   else
-   {
-      crc = crc8((uint8_t*)&recv, sizeof(I2C_output_packet)-1, 0);
-      ROS_DEBUG("expected crc: %hhu", crc);
-      ROS_DEBUG("got: %hhu\n", recv.crc);
+    ros::Time current_time, last_time;
 
-      ROS_DEBUG("left motor encoder = %hd",recv.left_encoder);
-      ROS_DEBUG("right motor encoder = %hd\n",recv.right_encoder);
-      current_time = ros::Time::now();
+    ros::Rate r(30);
+    while(n.ok())
+    {
+        //Read from T-Rex
+        I2C_output_packet recv;
+        uint8_t crc = 0;
+        if (read(file,&recv,sizeof(I2C_output_packet)) != sizeof(I2C_output_packet))
+        {
+            ROS_ERROR("Cannot read bytes");
+        }
+        else
+        {
+            crc = crc8((uint8_t*)&recv, sizeof(I2C_output_packet)-1, 0);
+            ROS_DEBUG("expected crc: %hhu", crc);
+            ROS_DEBUG("got: %hhu\n", recv.crc);
 
-      int16_t left_encoder_cur = recv.left_encoder;
-      int16_t right_encoder_cur = recv.right_encoder;
-      if(firstReading)
-      {
-        firstReading = false;
-        left_encoder_prev = left_encoder_cur;
-        right_encoder_prev = right_encoder_cur;
-        last_time = current_time;
-      }
+            ROS_DEBUG("left motor encoder = %hd",recv.left_encoder);
+            ROS_DEBUG("right motor encoder = %hd\n",recv.right_encoder);
+            current_time = ros::Time::now();
 
-      int LEDD = (left_encoder_cur - left_encoder_prev);
-      int REDD = (right_encoder_cur - right_encoder_prev);
+            int16_t left_encoder_cur = recv.left_encoder;
+            int16_t right_encoder_cur = recv.right_encoder;
+            if(firstReading)
+            {
+                firstReading = false;
+                left_encoder_prev = left_encoder_cur;
+                right_encoder_prev = right_encoder_cur;
+                last_time = current_time;
+            }
 
-      if(abs(LEDD)>60000)
-        LEDD = -sgn(LEDD)*(65536 - abs(LEDD));
+            int LEDD = (left_encoder_cur - left_encoder_prev);
+            int REDD = (right_encoder_cur - right_encoder_prev);
 
-      if(abs(REDD)>60000)
-        REDD = -sgn(REDD)*(65536 - abs(REDD));
+            if(abs(LEDD)>60000)
+                LEDD = -sgn(LEDD)*(65536 - abs(LEDD));
 
-      double LED = rate*wheelsPerimeter*LEDD;
-      double RED = rate*wheelsPerimeter*REDD;
+            if(abs(REDD)>60000)
+                REDD = -sgn(REDD)*(65536 - abs(REDD));
 
-      double meanDistance = (LED+RED)/2.0;
-      ROS_DEBUG("LED = %f",LED);
-      ROS_DEBUG("RED = %f",RED);
-      // ROS_DEBUG("meanDistance = %f",meanDistance);
-      // if(RED == 0.0 || LED == 0.0)
-      //   meanDistance = 0.0;
+            double LED = rate*wheelsPerimeter*LEDD;
+            double RED = rate*wheelsPerimeter*REDD;
+
+            double meanDistance = (LED+RED)/2.0;
+            ROS_DEBUG("LED = %f",LED);
+            ROS_DEBUG("RED = %f",RED);
+            // ROS_DEBUG("meanDistance = %f",meanDistance);
+            // if(RED == 0.0 || LED == 0.0)
+            //   meanDistance = 0.0;
 
 
-      //compute odometry in a typical way given the velocities of the robot
-      double dt = (current_time - last_time).toSec();
-      double dx = meanDistance*cos(th);
-      double dy = meanDistance*sin(th);
-      double omega = atan2((RED-LED), wheelsDistance);
+            //compute odometry in a typical way given the velocities of the robot
+            double dt = (current_time - last_time).toSec();
+            double dx = meanDistance*cos(th);
+            double dy = meanDistance*sin(th);
+            double omega = atan2((RED-LED), wheelsDistance);
 
-      // if (LED <=0 && RED <= 0)
-      //   omega = 0;
-      // ROS_DEBUG("dx = %f",x);
-      // ROS_DEBUG("dy = %f",y);
-      x += dx;
-      y += dy;
-      th += omega;
+            // if (LED <=0 && RED <= 0)
+            //   omega = 0;
+            // ROS_DEBUG("dx = %f",x);
+            // ROS_DEBUG("dy = %f",y);
+            x += dx;
+            y += dy;
+            th += omega;
 
-      // ROS_DEBUG("x = %f",x);
-      // ROS_DEBUG("y = %f\n",y);
-      double vx = meanDistance / dt;
-      omega /= dt;
+            // ROS_DEBUG("x = %f",x);
+            // ROS_DEBUG("y = %f\n",y);
+            double vx = meanDistance / dt;
+            omega /= dt;
 
-      //since all odometry is 6DOF we'll need a quaternion created from yaw
-      geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
+            //since all odometry is 6DOF we'll need a quaternion created from yaw
+            geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(th);
 
-      //first, we'll publish the transform over tf
-      geometry_msgs::TransformStamped odom_trans;
-      odom_trans.header.stamp = current_time;
-      odom_trans.header.frame_id = "odom";
-      odom_trans.child_frame_id = "base_link";
+            //first, we'll publish the transform over tf
+            geometry_msgs::TransformStamped odom_trans;
+            odom_trans.header.stamp = current_time;
+            odom_trans.header.frame_id = "odom";
+            odom_trans.child_frame_id = "base_link";
 
-      odom_trans.transform.translation.x = x;
-      odom_trans.transform.translation.y = y;
-      odom_trans.transform.translation.z = 0.0;
-      odom_trans.transform.rotation = odom_quat;
+            odom_trans.transform.translation.x = x;
+            odom_trans.transform.translation.y = y;
+            odom_trans.transform.translation.z = 0.0;
+            odom_trans.transform.rotation = odom_quat;
 
-      //send the transform
-      odom_broadcaster.sendTransform(odom_trans);
+            //send the transform
+            odom_broadcaster.sendTransform(odom_trans);
 
-      //next, we'll publish the odometry message over ROS
-      nav_msgs::Odometry odom;
-      odom.header.stamp = current_time;
-      odom.header.frame_id = "odom";
+            //next, we'll publish the odometry message over ROS
+            nav_msgs::Odometry odom;
+            odom.header.stamp = current_time;
+            odom.header.frame_id = "odom";
 
-      //set the position
-      odom.pose.pose.position.x = x;
-      odom.pose.pose.position.y = y;
-      odom.pose.pose.position.z = 0.0;
-      odom.pose.pose.orientation = odom_quat;
+            //set the position
+            odom.pose.pose.position.x = x;
+            odom.pose.pose.position.y = y;
+            odom.pose.pose.position.z = 0.0;
+            odom.pose.pose.orientation = odom_quat;
 
-      //set the velocity
-      odom.child_frame_id = "base_link";
-      odom.twist.twist.linear.x = vx;
-      odom.twist.twist.linear.y = 0.0;
-      odom.twist.twist.angular.z = omega;
+            //set the velocity
+            odom.child_frame_id = "base_link";
+            odom.twist.twist.linear.x = vx;
+            odom.twist.twist.linear.y = 0.0;
+            odom.twist.twist.angular.z = omega;
 
-      //publish the message
-      odom_pub.publish(odom);
+            //publish the message
+            odom_pub.publish(odom);
 
-      left_encoder_prev = left_encoder_cur;
-      right_encoder_prev = right_encoder_cur;
-      last_time = current_time;
-      ros::spinOnce();               // check for incoming messages
-      r.sleep();
+            left_encoder_prev = left_encoder_cur;
+            right_encoder_prev = right_encoder_cur;
+            last_time = current_time;
+            ros::spinOnce();               // check for incoming messages
+            r.sleep();
+        }
     }
-  }
 }

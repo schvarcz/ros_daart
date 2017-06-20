@@ -6,7 +6,7 @@
 
 
 typedef struct I2C_input_packet
-  {
+{
     int16_t left_motor_speed;
     int16_t right_motor_speed;
     int8_t use_pid;
@@ -14,7 +14,7 @@ typedef struct I2C_input_packet
 } I2C_input_packet;
 
 typedef struct I2C_output_packet
-  {
+{
     uint16_t left_encoder;
     uint16_t right_encoder;
     uint8_t __dont_use_this_padding_byte;

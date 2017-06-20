@@ -4,12 +4,12 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/LaserScan.h>
 
+using namespace std;
+
 ros::Time last_time;
 double omega = 0.0;
 double desiredAngle = 0.0;
 bool first = true, obstacleDetected = false;
-
-using namespace std;
 
 void odomCallback(const nav_msgs::Odometry odom)
 {
@@ -97,44 +97,44 @@ void onNewScan(const sensor_msgs::LaserScan scan_msg)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "daart_random_walk");
+    ros::init(argc, argv, "daart_random_walk");
 
-  ros::NodeHandle n;
-  std::string ns = ros::this_node::getNamespace();
-  ros::Subscriber sub1 = n.subscribe(ns+"/odom", 100, odomCallback);
-  ros::Subscriber sub2 = n.subscribe(ns+"/scan", 100, onNewScan);
-  ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
+    ros::NodeHandle n;
+    std::string ns = ros::this_node::getNamespace();
+    ros::Subscriber sub1 = n.subscribe(ns+"/odom", 100, odomCallback);
+    ros::Subscriber sub2 = n.subscribe(ns+"/scan", 100, onNewScan);
+    ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
 
-  ros::Rate mRate(30);
-  while(n.ok())
-  {
+    ros::Rate mRate(30);
+    while(n.ok())
+    {
+        geometry_msgs::Twist cmd_vel;
+
+        if(obstacleDetected && fabs(omega-desiredAngle) <= M_PI/36)
+            obstacleDetected = false;
+
+        if (obstacleDetected)
+        {
+            cmd_vel.linear.x = 0.;
+            cmd_vel.angular.z = 1*sgn(desiredAngle-omega);
+            cmd_pub.publish(cmd_vel);
+            ROS_INFO("z = %f",cmd_vel.angular.z);
+        }
+        else if (!obstacleDetected)
+        {
+            ROS_INFO("Forward.");
+            cmd_vel.linear.x = 0.5;
+            cmd_vel.angular.z = 0.;
+            cmd_pub.publish(cmd_vel);
+            ROS_INFO("x = %f",cmd_vel.linear.x);
+        }
+
+        ros::spinOnce();
+        mRate.sleep();
+    }
+
     geometry_msgs::Twist cmd_vel;
-
-    if(obstacleDetected && fabs(omega-desiredAngle) <= M_PI/36)
-        obstacleDetected = false;
-
-    if (obstacleDetected)
-    {
-        cmd_vel.linear.x = 0.;
-        cmd_vel.angular.z = 1*sgn(desiredAngle-omega);
-        cmd_pub.publish(cmd_vel);
-        ROS_INFO("z = %f",cmd_vel.angular.z);
-    }
-    else if (!obstacleDetected)
-    {
-        ROS_INFO("Forward.");
-        cmd_vel.linear.x = 0.5;
-        cmd_vel.angular.z = 0.;
-        cmd_pub.publish(cmd_vel);
-        ROS_INFO("x = %f",cmd_vel.linear.x);
-    }
-
-    ros::spinOnce();
-    mRate.sleep();
-  }
-
-  geometry_msgs::Twist cmd_vel;
-  cmd_vel.linear.x = 0;
-  cmd_vel.angular.z = 0.;
-  cmd_pub.publish(cmd_vel);
+    cmd_vel.linear.x = 0;
+    cmd_vel.angular.z = 0.;
+    cmd_pub.publish(cmd_vel);
 }

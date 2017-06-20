@@ -1,13 +1,12 @@
 <launch>
+    <arg name="map_file" default="$(find daart)/resources/maps/ensta.yaml" />
+    <node type="map_server" pkg="map_server" name="map_server" output="screen" args="$(arg map_file)"/>
 
-  <arg name="map_file" default="$(find daart)/resources/maps/ensta.yaml" />
-  <node type="map_server" pkg="map_server" name="map_server" output="screen" args="$(arg map_file)"/>
-
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find daart)/config/common_cost_map_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find daart)/config/common_cost_map_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find daart)/config/local_cost_map.yaml" command="load" />
-    <rosparam file="$(find daart)/config/global_cost_map.yaml" command="load" />
-    <rosparam file="$(find daart)/config/base_local_planner_params.yaml" command="load" />
-  </node>
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <rosparam file="$(find daart)/config/common_cost_map_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find daart)/config/common_cost_map_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find daart)/config/local_cost_map.yaml" command="load" />
+        <rosparam file="$(find daart)/config/global_cost_map.yaml" command="load" />
+        <rosparam file="$(find daart)/config/base_local_planner_params.yaml" command="load" />
+    </node>
 </launch>

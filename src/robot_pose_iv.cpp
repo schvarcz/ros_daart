@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     // Set up ROS.
     init(argc, argv, "robot_pose_iv");
     NodeHandle n;
-//    Subscriber sub1 = n.subscribe("/imu", 1, onNewIMU);
+    //    Subscriber sub1 = n.subscribe("/imu", 1, onNewIMU);
     Subscriber sub2 = n.subscribe("/odom", 1, onNewOdom);
     odom_pub = n.advertise<nav_msgs::Odometry>("odom_iv", 50);
 

@@ -34,21 +34,20 @@ const uint8_t crc_table[256] = {
     0x2BU,0x75U,0x97U,0xC9U,0x4AU,0x14U,0xF6U,0xA8U,
     0x74U,0x2AU,0xC8U,0x96U,0x15U,0x4BU,0xA9U,0xF7U,
     0xB6U,0xE8U,0x0AU,0x54U,0xD7U,0x89U,0x6BU,0x35U,
-    };
-    
-uint8_t crc8(unsigned char* data, int len, uint8_t crc){
+};
 
-  /*
+uint8_t crc8(unsigned char* data, int len, uint8_t crc)
+{
+    /*
     Automatically generated CRC function
     polynomial: 0x131, bit reverse algorithm
     0x131 == Dallas polynom, generated with python crcmod
-    
+
     import crcmod
     fd = open("foo.c", "a")
     crc8 = crcmod.Crc(0x131) #Dallas polynom
     crc8.generateCode("crc8", fd)
-  */
-
+    */
 
     while (len > 0)
     {
@@ -56,6 +55,6 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
         data++;
         len--;
     }
-   
+
     return crc;
 }

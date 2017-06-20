@@ -43,96 +43,96 @@ double desiredRotation(double xGoal, double yGoal, double yaw)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "daart_waypoints2");
+    ros::init(argc, argv, "daart_waypoints2");
 
-  ros::NodeHandle n;
-  std::string ns = ros::this_node::getNamespace();
-  ros::Subscriber sub = n.subscribe(ns+"/odom", 100, odomCallback);
-  ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
-  bool sended = false;
+    ros::NodeHandle n;
+    std::string ns = ros::this_node::getNamespace();
+    ros::Subscriber sub = n.subscribe(ns+"/odom", 100, odomCallback);
+    ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
+    bool sended = false;
 
 //  double goals[][2] = {
 //      { 1 + 6.5, 0 + 8.5},
 //      {-1 + 6.5, 0 + 8.5},
 //      { 0 + 6.5,-1 + 8.5},
 //  };
-  double squareScale = 0.31;
-  double goals[][2] = {
-      {  30*squareScale, 0},
-      {  0, -11*squareScale},
-      {  0, -15*squareScale},
-      {  0, -11*squareScale},
-  };
+    double squareScale = 0.31;
+    double goals[][2] = {
+        {  30*squareScale, 0},
+        {  0, -11*squareScale},
+        {  0, -15*squareScale},
+        {  0, -11*squareScale},
+    };
 
-  int idxGoal = 0;
-  robotPose.position.x = 0;
-  robotPose.position.y = 0;
-  double roll, pitch, yaw = 0;
-  ros::Rate r(30);
-  while(n.ok())
-  {
-    ROS_INFO("RobotsPose: %f, %f", robotPose.position.x, robotPose.position.y);
-    ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
-
-    double angleGoal = desiredRotation(goals[idxGoal][0], goals[idxGoal][1], 0);
-
-    double diffAngle = angleGoal-omega;
-    geometry_msgs::Twist cmd_vel;
-
-    if(fabs(diffAngle) > M_PI/90)
+    int idxGoal = 0;
+    robotPose.position.x = 0;
+    robotPose.position.y = 0;
+    double roll, pitch, yaw = 0;
+    ros::Rate r(30);
+    while(n.ok())
     {
-        ROS_INFO("angleGoal: %f",angleGoal);
-        ROS_INFO("diffAngle: %f",diffAngle);
+        ROS_INFO("RobotsPose: %f, %f", robotPose.position.x, robotPose.position.y);
+        ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
 
-        cmd_vel.linear.x = 0.;
-        cmd_vel.angular.z = 1*sgn(diffAngle);
-        sended = true;
-        cmd_pub.publish(cmd_vel);
-        if (first)
+        double angleGoal = desiredRotation(goals[idxGoal][0], goals[idxGoal][1], 0);
+
+        double diffAngle = angleGoal-omega;
+        geometry_msgs::Twist cmd_vel;
+
+        if(fabs(diffAngle) > M_PI/90)
         {
-            last_time = ros::Time::now();
-            first = false;
+            ROS_INFO("angleGoal: %f",angleGoal);
+            ROS_INFO("diffAngle: %f",diffAngle);
+
+            cmd_vel.linear.x = 0.;
+            cmd_vel.angular.z = 1*sgn(diffAngle);
+            sended = true;
+            cmd_pub.publish(cmd_vel);
+            if (first)
+            {
+                last_time = ros::Time::now();
+                first = false;
+            }
+            ROS_INFO("z = %f",cmd_vel.angular.z);
         }
-        ROS_INFO("z = %f",cmd_vel.angular.z);
-    }
-    else if (distance(0, 0, goals[idxGoal][0], goals[idxGoal][1]) - deltaX > 0.3)
-    {
-        ROS_INFO("Distance: %f",distance(0, 0, goals[idxGoal][0], goals[idxGoal][1]));
-        cmd_vel.linear.x = 0.5;
-        cmd_vel.angular.z = 0.;
-        sended = true;
-        cmd_pub.publish(cmd_vel);
-        if (first)
+        else if (distance(0, 0, goals[idxGoal][0], goals[idxGoal][1]) - deltaX > 0.3)
         {
-            last_time = ros::Time::now();
-            first = false;
+            ROS_INFO("Distance: %f",distance(0, 0, goals[idxGoal][0], goals[idxGoal][1]));
+            cmd_vel.linear.x = 0.5;
+            cmd_vel.angular.z = 0.;
+            sended = true;
+            cmd_pub.publish(cmd_vel);
+            if (first)
+            {
+                last_time = ros::Time::now();
+                first = false;
+            }
+            ROS_INFO("x = %f",cmd_vel.linear.x);
         }
-        ROS_INFO("x = %f",cmd_vel.linear.x);
+        else
+        {
+            omega = 0.0;
+            deltaX = 0.0;
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = 0;
+            sended = false;
+            cmd_pub.publish(cmd_vel);
+            ROS_INFO("z = %f",cmd_vel.angular.z);
+
+            tf::Quaternion q;
+            tf::quaternionMsgToTF(robotPose.orientation, q);
+            tf::Matrix3x3 m(q);
+            m.getRPY(roll, pitch, yaw);
+
+            idxGoal++;
+            if (idxGoal==4)
+                idxGoal = 2;
+        }
+
+
+        ros::spinOnce();
+        if (!sended)
+            sleep(5);
+        r.sleep();
     }
-    else
-    {
-        omega = 0.0;
-        deltaX = 0.0;
-        cmd_vel.linear.x = 0.0;
-        cmd_vel.angular.z = 0;
-        sended = false;
-        cmd_pub.publish(cmd_vel);
-        ROS_INFO("z = %f",cmd_vel.angular.z);
-
-        tf::Quaternion q;
-        tf::quaternionMsgToTF(robotPose.orientation, q);
-        tf::Matrix3x3 m(q);
-        m.getRPY(roll, pitch, yaw);
-
-        idxGoal++;
-        if (idxGoal==4)
-            idxGoal = 2;
-    }
-
-
-    ros::spinOnce();
-    if (!sended)
-        sleep(5);
-    r.sleep();
-  }
 }

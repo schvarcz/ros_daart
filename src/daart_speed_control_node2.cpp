@@ -15,7 +15,6 @@
 #include <stdint.h>
 #include <linux/i2c-dev.h>
 #include "I2CIO.h"
-// #include "crc.h"
 
 using namespace std;
 
@@ -52,11 +51,11 @@ const uint8_t crc_table[256] = {
     0x2BU,0x75U,0x97U,0xC9U,0x4AU,0x14U,0xF6U,0xA8U,
     0x74U,0x2AU,0xC8U,0x96U,0x15U,0x4BU,0xA9U,0xF7U,
     0xB6U,0xE8U,0x0AU,0x54U,0xD7U,0x89U,0x6BU,0x35U,
-    };
+};
 
-uint8_t crc8(unsigned char* data, int len, uint8_t crc){
-
-  /*
+uint8_t crc8(unsigned char* data, int len, uint8_t crc)
+{
+    /*
     Automatically generated CRC function
     polynomial: 0x131, bit reverse algorithm
     0x131 == Dallas polynom, generated with python crcmod
@@ -65,7 +64,7 @@ uint8_t crc8(unsigned char* data, int len, uint8_t crc){
     fd = open("foo.c", "a")
     crc8 = crcmod.Crc(0x131) #Dallas polynom
     crc8.generateCode("crc8", fd)
-  */
+    */
 
 
     while (len > 0)
@@ -99,16 +98,16 @@ void openConnectionTREX()
 
     if ( (file = open(filename,O_RDWR)) < 0 )
     {
-       ROS_ERROR("Failed to open i2c bus. Shutdown.");
-       ros::shutdown();
+        ROS_ERROR("Failed to open i2c bus. Shutdown.");
+        ros::shutdown();
     }
 
     ioctl(file,I2C_TENBIT, 0);
 
     if ( ioctl(file,I2C_SLAVE, addr) < 0 )
     {
-       ROS_ERROR("Failed to talk to T-Rex. Shutdown.");
-       ros::shutdown();
+        ROS_ERROR("Failed to talk to T-Rex. Shutdown.");
+        ros::shutdown();
     }
 }
 
@@ -120,49 +119,49 @@ void sendVel2TREX(double v1, double v2)
     to_send.left_motor_speed  = round(5.*v1/rate +10.*sgn(v1));
     to_send.right_motor_speed = round(5.*v2/rate +10.*sgn(v2));
     if (v1 == 0.0)
-      to_send.left_motor_speed  = 0;
+        to_send.left_motor_speed  = 0;
     if (v2 == 0.0)
-      to_send.right_motor_speed  = 0;
+        to_send.right_motor_speed  = 0;
 
 
     to_send.crc = crc8((unsigned char*) &to_send, sizeof(I2C_input_packet)-1, 0);
 
     if (write(file, &to_send, sizeof(I2C_input_packet)) != sizeof(I2C_input_packet))
-       ROS_ERROR("Cannot write bytes");
+        ROS_ERROR("Cannot write bytes");
     ROS_INFO("Sent.");
 }
 
 void processTwist(const geometry_msgs::Twist vel_msg)
 {
-  double vel = vel_msg.linear.x;
-  double omega = vel_msg.angular.z;
+    double vel = vel_msg.linear.x;
+    double omega = vel_msg.angular.z;
 
-  stringstream msgStream;
-  msgStream << "Vel: " << vel << "\t Omega:" << omega;
-  ROS_INFO(msgStream.str().c_str());
+    stringstream msgStream;
+    msgStream << "Vel: " << vel << "\t Omega:" << omega;
+    ROS_INFO(msgStream.str().c_str());
 
-  v2 = (vel*2 + omega*wheelsDistance) /2.0;
-  v1 = vel*2  - v2;
+    v2 = (vel*2 + omega*wheelsDistance) /2.0;
+    v1 = vel*2  - v2;
 
-  v1 = min(v1, maxVel);
-  v2 = min(v2, maxVel);
+    v1 = min(v1, maxVel);
+    v2 = min(v2, maxVel);
 
-  if (v1 != 0.0)
-    v1 = max(v1*sgn(v1), minVel)*sgn(v1);
+    if (v1 != 0.0)
+        v1 = max(v1*sgn(v1), minVel)*sgn(v1);
 
-  if (v2 != 0.0)
-    v2 = max(v2*sgn(v2), minVel)*sgn(v2);
+    if (v2 != 0.0)
+        v2 = max(v2*sgn(v2), minVel)*sgn(v2);
 
-  sendVel2TREX(v1, v2);
-  cout << v1 << " - " << v2 << endl;
+    sendVel2TREX(v1, v2);
+    cout << v1 << " - " << v2 << endl;
 }
 
 geometry_msgs::Twist old_vel_msg;
 
 void velCallback(const geometry_msgs::Twist vel_msg)
 {
-  old_vel_msg = vel_msg;
-  processTwist(vel_msg);
+    old_vel_msg = vel_msg;
+    processTwist(vel_msg);
 }
 
 void odomCallback(const nav_msgs::Odometry odom)
@@ -171,25 +170,25 @@ void odomCallback(const nav_msgs::Odometry odom)
 
 void shuttingdown(int signal)
 {
-  sendVel2TREX(0.0, 0.0);
-  ROS_INFO("Speed control shutting down");
-  ros::shutdown();
+    sendVel2TREX(0.0, 0.0);
+    ROS_INFO("Speed control shutting down");
+    ros::shutdown();
 }
 
 int main(int argc, char **argv)
 {
-  // Set up ROS.
-  ros::init(argc, argv, "daart_speed_control_node");
-  openConnectionTREX();
+    // Set up ROS.
+    ros::init(argc, argv, "daart_speed_control_node");
+    openConnectionTREX();
 
-  ros::NodeHandle n;
+    ros::NodeHandle n;
 
-  ROS_INFO("Hello world!");
-  std::string ns = ros::this_node::getNamespace();
-  ros::Subscriber sub1 = n.subscribe(ns+"/cmd_vel", 0, velCallback);
-  //ros::Subscriber sub2 = n.subscribe(ns+"/odom", 0, odomCallback);
+    ROS_INFO("Hello world!");
+    std::string ns = ros::this_node::getNamespace();
+    ros::Subscriber sub1 = n.subscribe(ns+"/cmd_vel", 0, velCallback);
+    //ros::Subscriber sub2 = n.subscribe(ns+"/odom", 0, odomCallback);
 
-  signal(SIGINT, shuttingdown);
-  ros::spin();
-  return 0;
+    signal(SIGINT, shuttingdown);
+    ros::spin();
+    return 0;
 }
