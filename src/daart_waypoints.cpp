@@ -54,13 +54,21 @@ int main(int argc, char** argv)
 //      {-1 + 6.5, 0 + 8.5},
 //      { 0 + 6.5,-1 + 8.5},
 //  };
+  // double goals[][2] = {
+  //     {  7.5, 6.9},
+  //     {  7.5, 5.2},
+  //     { 12.4, 5  },
+  //     { 12.4, 2.5},
+  //     { 16  , 2.5},
+  //     { 16  , 5  },
+  // };
+
+  double squareScale = 0.31;
   double goals[][2] = {
-      {  7.5, 6.9},
-      {  7.5, 5.2},
-      { 12.4, 5  },
-      { 12.4, 2.5},
-      { 16  , 2.5},
-      { 16  , 5  },
+      {  30*squareScale, 0},
+      {  30*squareScale, -11*squareScale},
+      {  15*squareScale, -11*squareScale},
+      {  15*squareScale, 0},
   };
 
   int idxGoal = 0;
@@ -123,8 +131,8 @@ int main(int argc, char** argv)
         m.getRPY(roll, pitch, yaw);
 
         idxGoal++;
-        if (idxGoal==6)
-            idxGoal = 2;
+        if (idxGoal==4)
+            idxGoal = 0;
     }
 
 

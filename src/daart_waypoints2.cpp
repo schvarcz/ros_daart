@@ -56,11 +56,12 @@ int main(int argc, char** argv)
 //      {-1 + 6.5, 0 + 8.5},
 //      { 0 + 6.5,-1 + 8.5},
 //  };
+  double squareScale = 0.31;
   double goals[][2] = {
-      {  10, 0},
-      {  0, -4},
-      {  0, -4},
-      {  0, -4},
+      {  30*squareScale, 0},
+      {  0, -11*squareScale},
+      {  0, -15*squareScale},
+      {  0, -11*squareScale},
   };
 
   int idxGoal = 0;
@@ -84,7 +85,7 @@ int main(int argc, char** argv)
         ROS_INFO("diffAngle: %f",diffAngle);
 
         cmd_vel.linear.x = 0.;
-        cmd_vel.angular.z = 0.5*sgn(diffAngle);
+        cmd_vel.angular.z = 1*sgn(diffAngle);
         sended = true;
         cmd_pub.publish(cmd_vel);
         if (first)
@@ -125,7 +126,7 @@ int main(int argc, char** argv)
 
         idxGoal++;
         if (idxGoal==4)
-            idxGoal = 1;
+            idxGoal = 2;
     }
 
 
