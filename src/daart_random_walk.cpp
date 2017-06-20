@@ -102,7 +102,7 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
   std::string ns = ros::this_node::getNamespace();
   ros::Subscriber sub1 = n.subscribe(ns+"/odom", 100, odomCallback);
-  ros::Subscriber sub2 = n.subscribe(ns+"/laser_0", 100, onNewScan);
+  ros::Subscriber sub2 = n.subscribe(ns+"/scan", 100, onNewScan);
   ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
 
   ros::Rate mRate(30);
@@ -115,6 +115,7 @@ int main(int argc, char** argv)
 
     if (obstacleDetected)
     {
+        cmd_vel.linear.x = 0.;
         cmd_vel.angular.z = 1*sgn(desiredAngle-omega);
         cmd_pub.publish(cmd_vel);
         ROS_INFO("z = %f",cmd_vel.angular.z);
@@ -122,7 +123,7 @@ int main(int argc, char** argv)
     else if (!obstacleDetected)
     {
         ROS_INFO("Forward.");
-        cmd_vel.linear.x = 1;
+        cmd_vel.linear.x = 0.5;
         cmd_vel.angular.z = 0.;
         cmd_pub.publish(cmd_vel);
         ROS_INFO("x = %f",cmd_vel.linear.x);
@@ -131,4 +132,9 @@ int main(int argc, char** argv)
     ros::spinOnce();
     mRate.sleep();
   }
+
+  geometry_msgs::Twist cmd_vel;
+  cmd_vel.linear.x = 0;
+  cmd_vel.angular.z = 0.;
+  cmd_pub.publish(cmd_vel);
 }
