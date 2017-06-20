@@ -15,7 +15,6 @@
 #include <stdint.h>
 #include <linux/i2c-dev.h>
 #include "I2CIO.h"
-// #include "crc.h"
 
 using namespace std;
 
@@ -86,12 +85,12 @@ template <typename T> int sgn(T val)
 int file;
 double wheelsDistance = 0.255;
 double wheelsDiameter = 0.40;
-double minVel = 2.5, maxVel = 3;
-double shiftMoving = 0, shiftInPlace = 0.0;
-double scaleMoving = 1.0, scaleInPlace = 1.0;
+double minVelRotating = 2.5, maxVelRotating = 3;
+double minVelMoving = 0.0, maxVelMoving = 2;
 
-double v1Desired = 0.0, v2Desired = 0.0, v1 = 0.0, v2 = 0.0;
-double bumping = false;
+double v1 = 0.0, v2 = 0.0;
+
+geometry_msgs::Twist old_vel_msg;
 
 void openConnectionTREX()
 {
@@ -139,106 +138,53 @@ void processTwist(const geometry_msgs::Twist vel_msg)
   double vel = vel_msg.linear.x;
   double omega = vel_msg.angular.z;
 
-  if (omega != 0.0)
-  {
-      if(vel_msg.linear.x == 0.0)
-        omega = omega*scaleInPlace + shiftInPlace*sgn(omega);
-      else
-        omega = omega*scaleMoving + shiftMoving*sgn(omega);
-  }
-
   stringstream msgStream;
   msgStream << "Vel: " << vel << "\t Omega:" << omega;
   ROS_INFO(msgStream.str().c_str());
 
-  v2 = (vel*2 + omega*wheelsDistance) /2.0;
+  v2 = (vel*2 + omega*wheelsDistance)/2.0;
   v1 = vel*2  - v2;
 
-  v1 = min(v1, maxVel);
-  v2 = min(v2, maxVel);
+  if (vel_msg.linear.x == 0.0)
+  {
+      v1 = min(v1, maxVelRotating);
+      v2 = min(v2, maxVelRotating);
 
-  if (v1 != 0.0)
-    v1 = max(v1*sgn(v1), minVel)*sgn(v1);
+      if (v1 != 0.0)
+        v1 = max(v1*sgn(v1), minVelRotating)*sgn(v1);
 
-  if (v2 != 0.0)
-    v2 = max(v2*sgn(v2), minVel)*sgn(v2);
-  // if (v1Desired ==0.0 || v2Desired ==0.0)
-  // {
-  //   sendVel2TREX(1.2, 1.2);
-  //   usleep(500);
-  // }
-  v1Desired = v1;
-  v2Desired = v2;
-  bumping = false;
+      if (v2 != 0.0)
+        v2 = max(v2*sgn(v2), minVelRotating)*sgn(v2);
+  }
+  else
+  {
+      v1 = min(v1, maxVelMoving);
+      v2 = min(v2, maxVelMoving);
+
+      if (v1 != 0.0)
+        v1 = max(v1*sgn(v1), minVelMoving)*sgn(v1);
+
+      if (v2 != 0.0)
+        v2 = max(v2*sgn(v2), minVelMoving)*sgn(v2);
+
+      if (v1 < 1.0 && old_vel_msg.linear.x == 0.0)
+      {
+        sendVel2TREX(1.5, 1.5);
+        usleep(500000);
+      }
+  }
   sendVel2TREX(v1, v2);
   cout << v1 << " - " << v2 << endl;
 }
 
-geometry_msgs::Twist old_vel_msg;
-
 void velCallback(const geometry_msgs::Twist vel_msg)
 {
-  old_vel_msg = vel_msg;
-  if (bumping)
-  {
-    return;
-  }
   processTwist(vel_msg);
+  old_vel_msg = vel_msg;
 }
 
 void odomCallback(const nav_msgs::Odometry odom)
 {
-  bool reset = true;
-  if( v1Desired == 0.0 && v2Desired == 0.0)
-  {
-    return;
-  }
-
-  if (odom.twist.twist.linear.x == 0.0 && v1Desired != -v2Desired && v1Desired != 0.0 && v2Desired != 0.0)
-  {
-      bumping = true;
-      reset = false;
-      v1 = v1 + 1*sgn(v1);
-      v2 = v2 + 1*sgn(v2);
-      v1 = min(v1, maxVel);
-      v2 = min(v2, maxVel);
-      sendVel2TREX(v1, v2);
-      ROS_INFO("Vel: %f", odom.twist.twist.linear.x);
-      ROS_INFO("Bumping, v1: %f, v2: %f",v1, v2);
-  }
-
-  if (odom.twist.twist.angular.z == 0.0 && v1Desired != v2Desired)
-  {
-      bumping = true;
-      reset = false;
-      // if(sgn(v1) != sgn(v2))
-      // {
-      //   double oldD = fabs(v2 - v1);
-      //   double newD = oldD+1;
-      //   v1 = newD*( v1/oldD );
-      //   v2 = newD*( v2/oldD );
-      // }
-      // else
-      if(fabs(v1Desired) > fabs(v2Desired))
-         v1 = v1 + 1*sgn(v1);
-      else
-         v2 = v2 + 1*sgn(v2);
-
-      v1 = min(v1, maxVel);
-      v2 = min(v2, maxVel);
-      sendVel2TREX(v1, v2);
-      ROS_INFO("Omega: %f", odom.twist.twist.angular.z);
-      ROS_INFO("Bumping, v1: %f, v2: %f",v1, v2);
-  }
-
-  if(reset)
-  {
-      if(bumping)
-      {
-        bumping = false;
-        processTwist(old_vel_msg);
-      }
-  }
 }
 
 void shuttingdown(int signal)
