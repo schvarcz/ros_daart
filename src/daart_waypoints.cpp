@@ -65,16 +65,16 @@ int main(int argc, char** argv)
 
     double squareScale = 0.31;
     double goals[][2] = {
-        {  30*squareScale, 0},
-        {  30*squareScale, -11*squareScale},
-        {  15*squareScale, -11*squareScale},
-        {  15*squareScale, 0},
+        {  30*squareScale + 7, 0 + 5},
+        {  30*squareScale + 7, -11*squareScale + 5},
+        {  15*squareScale + 7, -11*squareScale + 5},
+        {  15*squareScale + 7, 0 + 5},
     };
 
     int idxGoal = 0;
-    robotPose.position.x = 6.5;
-    robotPose.position.y = 8.5;
-    double roll, pitch, yaw = -M_PI_2;
+    robotPose.position.x = 7;
+    robotPose.position.y = 5;
+    double roll, pitch, yaw = 0;
     ros::Rate r(30);
     while(n.ok())
     {
