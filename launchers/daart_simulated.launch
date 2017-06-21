@@ -6,9 +6,9 @@
 
     <node type="stdr_server_node" pkg="stdr_server" name="stdr_server" output="screen" args="$(arg map_file)"/>
 
-    <node pkg="stdr_robot" type="robot_handler" name="robot0" args="add $(find intervalar_localization)/resources/robots/omni_robot.xml 7 5 0" />
+    <node pkg="stdr_robot" type="robot_handler" name="robot0" args="add $(find daart)/resources/robots/omni_robot.xml 7 5 0" />
     <!--<node pkg="stdr_robot" type="robot_handler" name="robot0" args="add $(find intervalar_localization)/resources/robots/omni_robot.xml 6.5 8.5 -1.57" />-->
-    <node name="rviz" type="rviz" pkg="rviz" args="-d $(find intervalar_localization)/config/config.rviz" />
+    <node name="rviz" type="rviz" pkg="rviz" args="-d $(find daart)/config/config.rviz" />
 
     <group ns="robot0">
         <!-- <include file="$(find intervalar_localization)/launchers/joy_teleop.launch"/> -->
