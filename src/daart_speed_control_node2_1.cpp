@@ -198,12 +198,31 @@ void shuttingdown(int signal)
 int main(int argc, char **argv)
 {
     // Set up ROS.
-    ros::init(argc, argv, "daart_speed_control_node2.1");
+    ros::init(argc, argv, "daart_speed_control_node2_1");
     openConnectionTREX();
 
     ros::NodeHandle n;
+    ros::NodeHandle nodeLocal("~");
 
-    ROS_INFO("Hello world!");
+
+    wheelsDistance = nodeLocal.param("wheelsDistance", wheelsDistance);
+    wheelsDiameter = nodeLocal.param("wheelsDiameter", wheelsDiameter);
+    minDeadZone = nodeLocal.param("minDeadZone", minDeadZone);
+    maxDeadZone = nodeLocal.param("maxDeadZone", maxDeadZone);
+    minHystZone = nodeLocal.param("minHystZone", minHystZone);
+    maxHystZone = nodeLocal.param("maxHystZone", maxHystZone);
+    minZone = nodeLocal.param("minZone", minZone);
+    maxZone = nodeLocal.param("maxZone", maxZone);
+    rate = nodeLocal.param("rate", rate);
+
+    bumpingTime = nodeLocal.param("bumpingTime", bumpingTime);
+    bumpingShift = nodeLocal.param("bumpingShift", bumpingShift);
+
+    minDeadZoneMS = minDeadZone*rate, maxDeadZoneMS = maxDeadZone*rate;
+    minHystZoneMS = minHystZone*rate, maxHystZoneMS = maxHystZone*rate;
+    minZoneMS = minZone*rate, maxZoneMS = maxZone*rate;
+
+
     std::string ns = ros::this_node::getNamespace();
     ros::Subscriber sub1 = n.subscribe(ns+"/cmd_vel", 0, velCallback);
 

@@ -148,7 +148,7 @@ add_library(crc src/crc.c)
 ## Declare a C++ executable
 add_executable(daart_speed_control_node src/daart_speed_control_node.cpp)
 add_executable(daart_speed_control_node2 src/daart_speed_control_node2.cpp)
-add_executable(daart_speed_control_node2.1 src/daart_speed_control_node2.1.cpp)
+add_executable(daart_speed_control_node2_1 src/daart_speed_control_node2_1.cpp)
 add_executable(daart_speed_control_node3 src/daart_speed_control_node3.cpp)
 add_executable(daart_odom_node src/daart_odom_node.cpp)
 add_executable(daart_odom_imu_node src/daart_odom_imu_node.cpp)
@@ -175,7 +175,7 @@ target_link_libraries(daart_speed_control_node2
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(daart_speed_control_node2.1
+target_link_libraries(daart_speed_control_node2_1
    crc
    ${catkin_LIBRARIES}
 )

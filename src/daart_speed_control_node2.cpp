@@ -171,6 +171,21 @@ int main(int argc, char **argv)
     openConnectionTREX();
 
     ros::NodeHandle n;
+    ros::NodeHandle nodeLocal("~");
+
+
+    wheelsDistance = nodeLocal.param("wheelsDistance", wheelsDistance);
+    wheelsDiameter = nodeLocal.param("wheelsDiameter", wheelsDiameter);
+    minDeadZone = nodeLocal.param("minDeadZone", minDeadZone);
+    maxDeadZone = nodeLocal.param("maxDeadZone", maxDeadZone);
+    minZone = nodeLocal.param("minZone", minZone);
+    maxZone = nodeLocal.param("maxZone", maxZone);
+    rate = nodeLocal.param("rate", rate);
+
+    minDeadZoneMS = minDeadZone*rate, maxDeadZoneMS = maxDeadZone*rate;
+    minZoneMS = minZone*rate, maxZoneMS = maxZone*rate;
+
+
 
     ROS_INFO("Hello world!");
     std::string ns = ros::this_node::getNamespace();
