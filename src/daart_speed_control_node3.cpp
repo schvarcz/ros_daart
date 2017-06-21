@@ -251,7 +251,7 @@ void shuttingdown(int signal)
 int main(int argc, char **argv)
 {
   // Set up ROS.
-  ros::init(argc, argv, "daart_speed_control_node");
+  ros::init(argc, argv, "daart_speed_control_node3");
   openConnectionTREX();
 
   ros::NodeHandle n;

@@ -142,16 +142,16 @@ void velCallback(const geometry_msgs::Twist vel_msg)
     v2 = (vel*2 + omega*wheelsDistance) /2.0;
     v1 = vel*2  - v2;
 
+    v1 = min(v1, maxZoneMS);
+    v2 = min(v2, maxZoneMS);
+    v1 = max(v1, minZoneMS);
+    v2 = max(v2, minZoneMS);
+
     if(minDeadZoneMS < v1 && v1 < maxDeadZoneMS)
         v1 = 0;
 
     if(minDeadZoneMS < v2 && v2 < maxDeadZoneMS)
         v2 = 0;
-
-    v1 = min(v1, maxZoneMS);
-    v2 = min(v2, maxZoneMS);
-    v1 = max(v1, minZoneMS);
-    v2 = max(v2, minZoneMS);
 
     sendVel2TREX(v1, v2);
     cout << v1 << " - " << v2 << endl;
@@ -167,7 +167,7 @@ void shuttingdown(int signal)
 int main(int argc, char **argv)
 {
     // Set up ROS.
-    ros::init(argc, argv, "daart_speed_control_node");
+    ros::init(argc, argv, "daart_speed_control_node2");
     openConnectionTREX();
 
     ros::NodeHandle n;
