@@ -118,8 +118,8 @@ int main(int argc, char** argv)
 
     int16_t left_encoder_prev = 0;
     int16_t right_encoder_prev = 0;
-    double wheelsDistance = 0.255; //25.5
-    double wheelsPerimeter = 0.40;// 40
+    double wheelsDistance = 0.255;
+    double wheelsPerimeter = 0.40;
     double rate = 1.0/300.;
     bool firstReading = true;
 
@@ -169,11 +169,11 @@ int main(int argc, char** argv)
             double RED = rate*wheelsPerimeter*REDD;
 
             double meanDistance = (LED+RED)/2.0;
+            // if(RED == 0.0 || LED == 0.0)
+            //   meanDistance = 0.0;
             ROS_DEBUG("LED = %f",LED);
             ROS_DEBUG("RED = %f",RED);
             // ROS_DEBUG("meanDistance = %f",meanDistance);
-            // if(RED == 0.0 || LED == 0.0)
-            //   meanDistance = 0.0;
 
 
             //compute odometry in a typical way given the velocities of the robot
@@ -182,8 +182,6 @@ int main(int argc, char** argv)
             double dy = meanDistance*sin(th);
             double omega = atan2((RED-LED), wheelsDistance);
 
-            // if (LED <=0 && RED <= 0)
-            //   omega = 0;
             // ROS_DEBUG("dx = %f",x);
             // ROS_DEBUG("dy = %f",y);
             x += dx;

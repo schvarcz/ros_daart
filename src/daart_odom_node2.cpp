@@ -110,7 +110,7 @@ void onNewIMU(const sensor_msgs::Imu imu)
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "daart_odom_node");
+    ros::init(argc, argv, "daart_odom_node2");
     openConnectionTREX();
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe("/imu", 1, onNewIMU);
