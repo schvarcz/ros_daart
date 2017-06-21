@@ -1,3 +1,5 @@
+#include <vector>
+#include <string>
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Pose.h>
@@ -8,6 +10,8 @@ ros::Time last_time;
 geometry_msgs::Pose robotPose;
 double omega = 0.0;
 bool first = true, odomReceived = false;
+
+using namespace std;
 
 void odomCallback(const nav_msgs::Odometry odom)
 {
@@ -39,6 +43,26 @@ double desiredRotation(double xGoal, double yGoal, double yaw)
     return angleGoal;
 }
 
+vector< vector<double> > strToPath(string strPath)
+{
+  vector< vector<double> > ret;
+  stringstream ssPath(strPath);
+  string pt;
+  while(getline(ssPath, pt, ';'))
+  {
+    stringstream ssPt(pt);
+    string coordX, coordY;
+    getline(ssPt, coordX, ',');
+    getline(ssPt, coordY, ',');
+
+    vector<double> point;
+    point.push_back(stod(coordX));
+    point.push_back(stod(coordY));
+    ret.push_back(point);
+  }
+  return ret;
+}
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "daart_waypoints");
@@ -48,6 +72,22 @@ int main(int argc, char** argv)
     ros::Subscriber sub = n.subscribe(ns+"/odom", 100, odomCallback);
     ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
     bool sended = false;
+    double linearVel = 0.2, rotationVel = 1.6, goalAcceptedDistance = 0.3, omegaAcceptedDistance = M_PI/36;
+    double stopTime = 5000000;
+    double roll, pitch, yaw = 0;
+
+
+    robotPose.position.x = 0;
+    robotPose.position.y = 0;
+
+    linearVel = nodeLocal.param("linearVel", linearVel);
+    rotationVel = nodeLocal.param("rotationVel", rotationVel);
+    goalAcceptedDistance = nodeLocal.param("goalAcceptedDistance", goalAcceptedDistance);
+    omegaAcceptedDistance = nodeLocal.param("omegaAcceptedDistance", omegaAcceptedDistance);
+
+    robotPose.position.x = nodeLocal.param("robotX", robotPose.position.x);
+    robotPose.position.y = nodeLocal.param("robotY", robotPose.position.y);
+    yaw = nodeLocal.param("robotTh", yaw);
 
 //  double goals[][2] = {
 //      { 1 + 6.5, 0 + 8.5},
@@ -63,18 +103,16 @@ int main(int argc, char** argv)
 //     { 16  , 5  },
 // };
 
+
     double squareScale = 0.31;
     double goals[][2] = {
-        {  30*squareScale + 7, 0 + 5},
-        {  30*squareScale + 7, -11*squareScale + 5},
-        {  15*squareScale + 7, -11*squareScale + 5},
-        {  15*squareScale + 7, 0 + 5},
+        {  30*squareScale + robotPose.position.x,   0*squareScale + robotPose.position.y},
+        {  30*squareScale + robotPose.position.x, -11*squareScale + robotPose.position.y},
+        {  15*squareScale + robotPose.position.x, -11*squareScale + robotPose.position.y},
+        {  15*squareScale + robotPose.position.x,   0*squareScale + robotPose.position.y},
     };
 
     int idxGoal = 0;
-    robotPose.position.x = 7;
-    robotPose.position.y = 5;
-    double roll, pitch, yaw = 0;
     ros::Rate r(30);
     while(n.ok())
     {
@@ -86,13 +124,13 @@ int main(int argc, char** argv)
         double diffAngle = angleGoal-omega;
         geometry_msgs::Twist cmd_vel;
 
-        if(fabs(diffAngle) > M_PI/90)
+        if(fabs(diffAngle) > omegaAcceptedDistance)
         {
             ROS_INFO("angleGoal: %f",angleGoal);
             ROS_INFO("diffAngle: %f",diffAngle);
 
-            cmd_vel.linear.x = 0.;
-            cmd_vel.angular.z = 0.5*sgn(diffAngle);
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = rotationVel*sgn(diffAngle);
             sended = true;
             cmd_pub.publish(cmd_vel);
             if (first)
@@ -102,11 +140,11 @@ int main(int argc, char** argv)
             }
             ROS_INFO("z = %f",cmd_vel.angular.z);
         }
-        else if (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) > 0.3)
+        else if (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) > goalAcceptedDistance)
         {
             ROS_INFO("Distance: %f",distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]));
-            cmd_vel.linear.x = 0.5;
-            cmd_vel.angular.z = 0.;
+            cmd_vel.linear.x = linearVel;
+            cmd_vel.angular.z = 0.0;
             sended = true;
             cmd_pub.publish(cmd_vel);
             if (first)
@@ -119,8 +157,8 @@ int main(int argc, char** argv)
         else
         {
             omega = 0.0;
-            cmd_vel.linear.x = 0.0;
-            cmd_vel.angular.z = 0;
+            cmd_vel.linear.x  = 0.0;
+            cmd_vel.angular.z = 0.0;
             sended = false;
             cmd_pub.publish(cmd_vel);
             ROS_INFO("z = %f",cmd_vel.angular.z);
@@ -138,7 +176,7 @@ int main(int argc, char** argv)
 
         ros::spinOnce();
         if (!sended)
-            sleep(5);
+            usleep(stopTime);
         r.sleep();
     }
 }
