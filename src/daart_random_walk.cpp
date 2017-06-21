@@ -14,6 +14,7 @@ bool first = true, obstacleDetected = false;
 double linearVel = 0.2, rotationVel = 1.6;
 double fovAcceptance = M_PI/36, fovFree = M_PI/3;
 double distanceAccepted = 0.5;
+int stopTime = 1000000;
 
 void odomCallback(const nav_msgs::Odometry odom)
 {
@@ -112,6 +113,7 @@ int main(int argc, char** argv)
     fovAcceptance = nodeLocal.param("fovAcceptance", fovAcceptance);
     fovFree = nodeLocal.param("fovFree", fovFree);
     distanceAccepted = nodeLocal.param("distanceAccepted", distanceAccepted);
+    stopTime = nodeLocal.param("stopTime", stopTime);
 
     std::string ns = ros::this_node::getNamespace();
     ros::Subscriber sub1 = n.subscribe(ns+"/odom", 100, odomCallback);
@@ -129,6 +131,14 @@ int main(int argc, char** argv)
 
         if (obstacleDetected)
         {
+            if (stopTime != 0)
+            {
+                cmd_vel.linear.x = 0.;
+                cmd_vel.angular.z = 0;
+                cmd_pub.publish(cmd_vel);
+                usleep(stopTime);
+            }
+
             cmd_vel.linear.x = 0.;
             cmd_vel.angular.z = rotationVel*sgn(desiredAngle-omega);
             cmd_pub.publish(cmd_vel);
