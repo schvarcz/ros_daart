@@ -85,9 +85,13 @@ template <typename T> int sgn(T val)
 int file;
 double wheelsDistance = 0.255;
 double wheelsDiameter = 0.40;
+double minDeadZone = -50, maxDeadZone = 50;
+double minZone = -80, maxZone = 80;
+double rate = 0.004;
 
-double rate = 0.1777777778;
-double minVel = 2.5, maxVel = 3;
+double minDeadZoneMS = minDeadZone*rate, maxDeadZoneMS = maxDeadZone*rate;
+double minZoneMS = minZone*rate, maxZoneMS = maxZone*rate;
+
 
 double v1 = 0.0, v2 = 0.0;
 
@@ -116,13 +120,8 @@ void sendVel2TREX(double v1, double v2)
     I2C_input_packet to_send;
     bzero(&to_send, sizeof(I2C_input_packet));
 
-    to_send.left_motor_speed  = round(5.*v1/rate +10.*sgn(v1));
-    to_send.right_motor_speed = round(5.*v2/rate +10.*sgn(v2));
-    if (v1 == 0.0)
-        to_send.left_motor_speed  = 0;
-    if (v2 == 0.0)
-        to_send.right_motor_speed  = 0;
-
+    to_send.left_motor_speed  = round(v1/rate);
+    to_send.right_motor_speed = round(v2/rate);
 
     to_send.crc = crc8((unsigned char*) &to_send, sizeof(I2C_input_packet)-1, 0);
 
@@ -131,7 +130,7 @@ void sendVel2TREX(double v1, double v2)
     ROS_INFO("Sent.");
 }
 
-void processTwist(const geometry_msgs::Twist vel_msg)
+void velCallback(const geometry_msgs::Twist vel_msg)
 {
     double vel = vel_msg.linear.x;
     double omega = vel_msg.angular.z;
@@ -143,29 +142,19 @@ void processTwist(const geometry_msgs::Twist vel_msg)
     v2 = (vel*2 + omega*wheelsDistance) /2.0;
     v1 = vel*2  - v2;
 
-    v1 = min(v1, maxVel);
-    v2 = min(v2, maxVel);
+    if(minDeadZoneMS < v1 && v1 < maxDeadZoneMS)
+        v1 = 0;
 
-    if (v1 != 0.0)
-        v1 = max(v1*sgn(v1), minVel)*sgn(v1);
+    if(minDeadZoneMS < v2 && v2 < maxDeadZoneMS)
+        v2 = 0;
 
-    if (v2 != 0.0)
-        v2 = max(v2*sgn(v2), minVel)*sgn(v2);
+    v1 = min(v1, maxZoneMS);
+    v2 = min(v2, maxZoneMS);
+    v1 = max(v1, minZoneMS);
+    v2 = max(v2, minZoneMS);
 
     sendVel2TREX(v1, v2);
     cout << v1 << " - " << v2 << endl;
-}
-
-geometry_msgs::Twist old_vel_msg;
-
-void velCallback(const geometry_msgs::Twist vel_msg)
-{
-    old_vel_msg = vel_msg;
-    processTwist(vel_msg);
-}
-
-void odomCallback(const nav_msgs::Odometry odom)
-{
 }
 
 void shuttingdown(int signal)
@@ -186,7 +175,6 @@ int main(int argc, char **argv)
     ROS_INFO("Hello world!");
     std::string ns = ros::this_node::getNamespace();
     ros::Subscriber sub1 = n.subscribe(ns+"/cmd_vel", 0, velCallback);
-    //ros::Subscriber sub2 = n.subscribe(ns+"/odom", 0, odomCallback);
 
     signal(SIGINT, shuttingdown);
     ros::spin();
