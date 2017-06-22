@@ -9,17 +9,21 @@ using namespace std;
 ros::Time last_time;
 double omega = 0.0;
 double desiredAngle = 0.0;
-bool first = true, obstacleDetected = false;
+bool first = true, obstacleDetected = false, shouldStop = false;
 
-double linearVel = 0.2, rotationVel = 1.6;
+double linearVel = 0.2, rotationVel = 1.4;
 double fovAcceptance = M_PI/36, fovFree = M_PI/3;
-double distanceAccepted = 0.5;
+double distanceAccepted = 0.4;
 int stopTime = 1000000;
 
 void odomCallback(const nav_msgs::Odometry odom)
 {
     omega += odom.twist.twist.angular.z*(odom.header.stamp - last_time).toSec();
     last_time = odom.header.stamp;
+
+
+    if(obstacleDetected && fabs(omega-desiredAngle) <= fovAcceptance)
+        obstacleDetected = false;
 }
 
 template <typename T> int sgn(T val)
@@ -93,12 +97,21 @@ void onNewScan(const sensor_msgs::LaserScan scan_msg)
                 maxAngle = -scan_msg.angle_increment*i;
             }
         }
+
+        if(maxAngle == -1)
+            maxAngle = M_PI;
         desiredAngle = maxAngle;
 
 
         omega = 0;
+        if (!obstacleDetected)
+            shouldStop = true;
         obstacleDetected = true;
+
+        ROS_INFO("desiredAngle: %f", desiredAngle);
     }
+//    else
+//        obstacleDetected = false;
 }
 
 int main(int argc, char** argv)
@@ -126,13 +139,11 @@ int main(int argc, char** argv)
     {
         geometry_msgs::Twist cmd_vel;
 
-        if(obstacleDetected && fabs(omega-desiredAngle) <= fovAcceptance)
-            obstacleDetected = false;
-
         if (obstacleDetected)
         {
-            if (stopTime != 0)
+            if (shouldStop && stopTime != 0)
             {
+                shouldStop = false;
                 cmd_vel.linear.x = 0.;
                 cmd_vel.angular.z = 0;
                 cmd_pub.publish(cmd_vel);
