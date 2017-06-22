@@ -10,7 +10,22 @@
     <node pkg="daart" type="daart_odom_node" name="daart_odom_node" output="screen" />
     <!-- <node pkg="daart" type="daart_odom_imu_node" name="daart_odom_imu_node" />  -->
     <!-- <node pkg="daart" type="daart_odom_node2" name="daart_odom_node2" /> -->
-    <node pkg="daart" type="daart_speed_control_node" name="daart_speed_control_node" output="screen" />
+    <!--<node pkg="daart" type="daart_speed_control_node" name="daart_speed_control_node" output="screen" />-->
+    <!--<node pkg="daart" type="daart_speed_control_node2" name="daart_speed_control_node2" output="screen">
+        <param name="rate" value="0.007" />
+    </node>-->
+    <node pkg="daart" type="daart_speed_control_node2_1" name="daart_speed_control_node2_1" output="screen">
+        <param name="bumpingTime" value="100000" />
+        <param name="bumpingShift" value="5" />
+        <param name="minDeadZone" value="-25" />
+        <param name="maxDeadZone" value="25" />
+        <param name="minHystZone" value="-40" />
+        <param name="maxHystZone" value="40" />
+        <param name="minZone" value="-60" />
+        <param name="maxZone" value="60" />
+        <param name="rate" value="0.007" />
+    </node>
+    <!--<node pkg="daart" type="daart_speed_control_node3" name="daart_speed_control_node3" output="screen" />-->
     <node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" output="screen">
         <rosparam file="$(find daart)/config/razor.yaml" command="load"/>
     </node>
