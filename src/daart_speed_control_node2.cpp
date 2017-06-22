@@ -85,9 +85,9 @@ template <typename T> int sgn(T val)
 int file;
 double wheelsDistance = 0.255;
 double wheelsDiameter = 0.40;
-double minDeadZone = -50, maxDeadZone = 50;
-double minZone = -80, maxZone = 80;
-double rate = 0.004;
+double minDeadZone = -40, maxDeadZone = 40;
+double minZone = -60, maxZone = 60;
+double rate = 0.007;
 
 double minDeadZoneMS = minDeadZone*rate, maxDeadZoneMS = maxDeadZone*rate;
 double minZoneMS = minZone*rate, maxZoneMS = maxZone*rate;

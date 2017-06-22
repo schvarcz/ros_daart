@@ -85,10 +85,10 @@ template <typename T> int sgn(T val)
 int file;
 double wheelsDistance = 0.255;
 double wheelsDiameter = 0.40;
-double minDeadZone = -30, maxDeadZone = 30;
-double minHystZone = -50, maxHystZone = 50;
-double minZone = -80, maxZone = 80;
-double rate = 0.004;
+double minDeadZone = -25, maxDeadZone = 25;
+double minHystZone = -40, maxHystZone = 40;
+double minZone = -60, maxZone = 60;
+double rate = 0.007;
 
 double minDeadZoneMS = minDeadZone*rate, maxDeadZoneMS = maxDeadZone*rate;
 double minHystZoneMS = minHystZone*rate, maxHystZoneMS = maxHystZone*rate;
