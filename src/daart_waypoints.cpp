@@ -6,20 +6,24 @@
 #include <geometry_msgs/Twist.h>
 #include <tf/transform_broadcaster.h>
 
-ros::Time last_time;
-geometry_msgs::Pose robotPose;
-double omega = 0.0;
-bool first = true, odomReceived = false;
-
 using namespace std;
+
+geometry_msgs::Pose robotPose;
+
+bool shouldStop = false, rotateInPlace = false;
+double linearVel = 0.2, rotationVel = 1.4, goalAcceptedDistance = 0.3, omegaAcceptedDistance = M_PI/3,  thetaThresInPlaceRotation = M_PI/36;
+double stopTime = 5000000;
+double roll, pitch, yaw = 0;
+string goalPointsStr = "";
+
 
 void odomCallback(const nav_msgs::Odometry odom)
 {
-    double dt = (odom.header.stamp - last_time).toSec();
-    omega += odom.twist.twist.angular.z*dt;
     robotPose = odom.pose.pose;
-    last_time = odom.header.stamp;
-    odomReceived = true;
+    tf::Quaternion q;
+    tf::quaternionMsgToTF(robotPose.orientation, q);
+    tf::Matrix3x3 m(q);
+    m.getRPY(roll, pitch, yaw);
 }
 
 template <typename T> int sgn(T val)
@@ -68,13 +72,11 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "daart_waypoints");
 
     ros::NodeHandle n;
+    ros::NodeHandle nodeLocal("~");
+
     std::string ns = ros::this_node::getNamespace();
     ros::Subscriber sub = n.subscribe(ns+"/odom", 100, odomCallback);
     ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
-    bool sended = false;
-    double linearVel = 0.2, rotationVel = 1.6, goalAcceptedDistance = 0.3, omegaAcceptedDistance = M_PI/36;
-    double stopTime = 5000000;
-    double roll, pitch, yaw = 0;
 
 
     robotPose.position.x = 0;
@@ -84,6 +86,7 @@ int main(int argc, char** argv)
     rotationVel = nodeLocal.param("rotationVel", rotationVel);
     goalAcceptedDistance = nodeLocal.param("goalAcceptedDistance", goalAcceptedDistance);
     omegaAcceptedDistance = nodeLocal.param("omegaAcceptedDistance", omegaAcceptedDistance);
+    thetaThresInPlaceRotation = nodeLocal.param("thetaThresInPlaceRotation", thetaThresInPlaceRotation);
 
     robotPose.position.x = nodeLocal.param("robotX", robotPose.position.x);
     robotPose.position.y = nodeLocal.param("robotY", robotPose.position.y);
@@ -114,69 +117,52 @@ int main(int argc, char** argv)
 
     int idxGoal = 0;
     ros::Rate r(30);
+    geometry_msgs::Twist cmd_vel;
     while(n.ok())
     {
-        ROS_INFO("RobotsPose: %f, %f", robotPose.position.x, robotPose.position.y);
-        ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
-
         double angleGoal = desiredRotation(goals[idxGoal][0] - robotPose.position.x, goals[idxGoal][1] - robotPose.position.y, yaw);
 
-        double diffAngle = angleGoal-omega;
-        geometry_msgs::Twist cmd_vel;
+        ROS_INFO("RobotsPose: %f, %f", robotPose.position.x, robotPose.position.y);
+        ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
+        ROS_INFO("Distance: %f, Bearing: %f",distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]),angleGoal);
 
-        if(fabs(diffAngle) > omegaAcceptedDistance)
+
+        if(rotateInPlace && (fabs(angleGoal) < thetaThresInPlaceRotation))
+            rotateInPlace = false;
+
+        if(fabs(angleGoal) > omegaAcceptedDistance || rotateInPlace)
         {
-            ROS_INFO("angleGoal: %f",angleGoal);
-            ROS_INFO("diffAngle: %f",diffAngle);
-
             cmd_vel.linear.x = 0.0;
-            cmd_vel.angular.z = rotationVel*sgn(diffAngle);
-            sended = true;
-            cmd_pub.publish(cmd_vel);
-            if (first)
-            {
-                last_time = ros::Time::now();
-                first = false;
-            }
-            ROS_INFO("z = %f",cmd_vel.angular.z);
+            cmd_vel.angular.z = rotationVel*sgn(angleGoal);
+            rotateInPlace = true;
         }
         else if (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) > goalAcceptedDistance)
         {
-            ROS_INFO("Distance: %f",distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]));
             cmd_vel.linear.x = linearVel;
-            cmd_vel.angular.z = 0.0;
-            sended = true;
-            cmd_pub.publish(cmd_vel);
-            if (first)
-            {
-                last_time = ros::Time::now();
-                first = false;
-            }
-            ROS_INFO("x = %f",cmd_vel.linear.x);
+            cmd_vel.angular.z = rotationVel*sin(angleGoal);
         }
         else
         {
-            omega = 0.0;
             cmd_vel.linear.x  = 0.0;
             cmd_vel.angular.z = 0.0;
-            sended = false;
-            cmd_pub.publish(cmd_vel);
-            ROS_INFO("z = %f",cmd_vel.angular.z);
-
-            tf::Quaternion q;
-            tf::quaternionMsgToTF(robotPose.orientation, q);
-            tf::Matrix3x3 m(q);
-            m.getRPY(roll, pitch, yaw);
+            shouldStop = true;
 
             idxGoal++;
             if (idxGoal==4)
                 idxGoal = 0;
         }
 
+        cmd_pub.publish(cmd_vel);
+        ROS_INFO("vel = %f\tomega = %f\n",cmd_vel.linear.x, cmd_vel.angular.z);
+
+
+        if (shouldStop)
+        {
+            shouldStop = false;
+            usleep(stopTime);
+        }
 
         ros::spinOnce();
-        if (!sended)
-            usleep(stopTime);
         r.sleep();
     }
 }
