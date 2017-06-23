@@ -21,8 +21,8 @@
         <param name="maxDeadZone" value="25" />
         <param name="minHystZone" value="-40" />
         <param name="maxHystZone" value="40" />
-        <param name="minZone" value="-60" />
-        <param name="maxZone" value="60" />
+        <param name="minZone" value="-100" />
+        <param name="maxZone" value="100" />
         <param name="rate" value="0.007" />
     </node>
     <!--<node pkg="daart" type="daart_speed_control_node3" name="daart_speed_control_node3" output="screen" />-->
