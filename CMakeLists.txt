@@ -154,11 +154,13 @@ add_executable(daart_speed_control_node2_1 src/daart_speed_control_node2_1.cpp)
 add_executable(daart_speed_control_node3 src/daart_speed_control_node3.cpp)
 add_executable(daart_odom_node src/daart_odom_node.cpp)
 add_executable(daart_odom_imu_node src/daart_odom_imu_node.cpp)
+add_executable(daart_odom_scan_node src/daart_odom_scan_node.cpp)
 add_executable(daart_odom_node2 src/daart_odom_node2.cpp)
 add_executable(daart_rotate src/daart_rotate.cpp)
 add_executable(daart_waypoints src/daart_waypoints.cpp)
 add_executable(daart_waypoints2 src/daart_waypoints2.cpp)
 add_executable(daart_random_walk src/daart_random_walk.cpp)
+add_executable(scan_copy src/scan_copy.cpp)
 # add_executable(robot_pose_iv src/robot_pose_iv.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -197,6 +199,11 @@ target_link_libraries(daart_odom_imu_node
    ${catkin_LIBRARIES}
 )
 
+target_link_libraries(daart_odom_scan_node
+   crc
+   ${catkin_LIBRARIES}
+)
+
 target_link_libraries(daart_odom_node2
    crc
    ${catkin_LIBRARIES}
@@ -215,6 +222,10 @@ target_link_libraries(daart_waypoints2
 )
 
 target_link_libraries(daart_random_walk
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(scan_copy
    ${catkin_LIBRARIES}
 )
 
