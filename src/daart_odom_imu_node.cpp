@@ -5,7 +5,7 @@
 
 using namespace ros;
 
-ros::Publisher odom_pub;
+ros::Publisher scan_pub;
 ros::Time last_time;
 bool firstMsg = true;
 double x=0, y=0, lastYaw;
@@ -69,7 +69,7 @@ void onNewOdom(const nav_msgs::Odometry odom_msg)
     odom.twist.twist.angular.z = omega;
 
     //publish the message
-    odom_pub.publish(odom);
+    scan_pub.publish(odom);
 
     last_time = odom_msg.header.stamp;
 }
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     NodeHandle n;
     Subscriber sub1 = n.subscribe("/imu", 1, onNewIMU);
     Subscriber sub2 = n.subscribe("/odom", 1, onNewOdom);
-    odom_pub = n.advertise<nav_msgs::Odometry>("odom_imu", 50);
+    scan_pub = n.advertise<nav_msgs::Odometry>("odom_imu", 50);
 
     spin();
 }
