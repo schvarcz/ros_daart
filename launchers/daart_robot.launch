@@ -8,6 +8,9 @@
         <!-- <param name="calibrate_time" value="true"/> -->
     </node>
     <node pkg="daart" type="daart_odom_node" name="daart_odom_node" output="screen" />
+
+    <include file="$(find daart)/launchers/odom_scan.launch" />
+
     <!-- <node pkg="daart" type="daart_odom_imu_node" name="daart_odom_imu_node" />  -->
     <!-- <node pkg="daart" type="daart_odom_node2" name="daart_odom_node2" /> -->
     <!--<node pkg="daart" type="daart_speed_control_node" name="daart_speed_control_node" output="screen" />-->
