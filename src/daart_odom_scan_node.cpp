@@ -14,9 +14,9 @@ public:
     {
         std::string ns = ros::this_node::getNamespace();
 
-        sub1 = n.subscribe(ns+"/odom", 100, &MergeOdom::odomCallback, this);
+        sub1 = n.subscribe(ns+"/odom_encoder", 100, &MergeOdom::odomCallback, this);
         sub2 = n.subscribe(ns+"/pose2D", 100, &MergeOdom::poseCallback, this);
-        odom_pub = n.advertise<nav_msgs::Odometry>(ns+"/odom_scan", 50);
+        odom_pub = n.advertise<nav_msgs::Odometry>(ns+"/odom", 50);
     }
 
     void poseCallback(const geometry_msgs::Pose2D pose2d_msg)
@@ -46,8 +46,8 @@ public:
         //first, we'll publish the transform over tf
         geometry_msgs::TransformStamped odom_trans;
         odom_trans.header.stamp = odom_msg.header.stamp;
-        odom_trans.header.frame_id = "odom_scan";
-        odom_trans.child_frame_id = "base_link_scan";
+        odom_trans.header.frame_id = "map";
+        odom_trans.child_frame_id = "odom";
 
         odom_trans.transform.translation.x = x;
         odom_trans.transform.translation.y = y;
@@ -60,7 +60,7 @@ public:
         //next, we'll publish the odometry message over ROS
         nav_msgs::Odometry odom;
         odom.header.stamp = odom_msg.header.stamp;
-        odom.header.frame_id = "odom_scan";
+        odom.header.frame_id = "map";
 
         //set the position
         odom.pose.pose.position.x = x;
@@ -69,7 +69,7 @@ public:
         odom.pose.pose.orientation = odom_quat;
 
         //set the velocity
-        odom.child_frame_id = "base_link_scan";
+        odom.child_frame_id = "odom";
         odom.twist.twist.linear.x = odom_msg.twist.twist.linear.x;
         odom.twist.twist.linear.y = odom_msg.twist.twist.linear.y;
         odom.twist.twist.angular.z = omega;

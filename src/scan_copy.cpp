@@ -9,13 +9,13 @@ public:
     ScanCopier()
     {
         sub = n.subscribe("/scan", 1, &ScanCopier::onNewScan, this);
-        scan_pub = n.advertise<sensor_msgs::LaserScan>("/scan_odom", 50);
+        scan_pub = n.advertise<sensor_msgs::LaserScan>("/scan_copy2odom", 50);
     }
 
     void onNewScan(const sensor_msgs::LaserScan scan_msg)
     {
         sensor_msgs::LaserScan scan_msg2 = scan_msg;
-        scan_msg2.header.frame_id = "laser_odom";
+        scan_msg2.header.frame_id = "laser_copy2odom";
         scan_pub.publish(scan_msg2);
     }
 
