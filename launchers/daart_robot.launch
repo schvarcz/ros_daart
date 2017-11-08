@@ -4,15 +4,19 @@
         <param name="image_height" value="480"/>
         <param name="rate" value="20"/>
     </node> -->
-    <node pkg="urg_node" type="urg_node" name="daart_hokuyo" output="screen">
-        <!-- <param name="calibrate_time" value="true"/> -->
-    </node>
+    <!-- <node pkg="urg_node" type="urg_node" name="daart_hokuyo" output="screen"/> -->
+    <include file="$(find rplidar_ros)/launch/rplidar.launch" />
+
+
+    #### ODOM PUBLISHES ####
+    <!-- <node pkg="daart" type="daart_odom_imu_node" name="daart_odom_imu_node" />  -->
     <node pkg="daart" type="daart_odom_node" name="daart_odom_node" output="screen" />
+    <!-- <node pkg="daart" type="daart_odom_node2" name="daart_odom_node2" /> -->
 
     <include file="$(find daart)/launchers/odom_scan.launch" />
 
-    <!-- <node pkg="daart" type="daart_odom_imu_node" name="daart_odom_imu_node" />  -->
-    <!-- <node pkg="daart" type="daart_odom_node2" name="daart_odom_node2" /> -->
+
+    #### SPEED CONTROLS PUBLISHES ####
     <!--<node pkg="daart" type="daart_speed_control_node" name="daart_speed_control_node" output="screen" />-->
     <!--<node pkg="daart" type="daart_speed_control_node2" name="daart_speed_control_node2" output="screen">
         <param name="rate" value="0.007" />
@@ -29,11 +33,13 @@
         <param name="rate" value="0.007" />
     </node>
     <!--<node pkg="daart" type="daart_speed_control_node3" name="daart_speed_control_node3" output="screen" />-->
-    <node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" output="screen">
+    <!--<node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" output="screen">
         <rosparam file="$(find daart)/config/razor.yaml" command="load"/>
-    </node>
+    </node>-->
 
-    <node pkg="tf" type="static_transform_publisher" name="odom2map"  args="7 10 0 0 0 0  map       odom          1000" />
-    <node pkg="tf" type="static_transform_publisher" name="laser2map" args="0 0 0 0 0 0   base_link laser 				 1000" />
-    <node pkg="tf" type="static_transform_publisher" name="imu2map"   args="0 0 0 0 0 0   base_link base_imu_link 1000" />
+
+    #### TF PUBLISHES ####
+    <node pkg="tf" type="static_transform_publisher" name="baselnk2odom" args="0 0 0 0 0 0  odom base_link 1000" />
+    <node pkg="tf" type="static_transform_publisher" name="lasercopy2odom2odomscan" args="0 0 0 0 0 0  odom_scan laser_copy2odom 1000" />
+    <node pkg="tf" type="static_transform_publisher" name="laser2baselink" args="0 0 0 0 0 0  base_link laser 1000" />
 </launch>

@@ -114,7 +114,7 @@ int main(int argc, char** argv)
     openConnectionTREX();
     ros::NodeHandle n;
     ros::Subscriber sub = n.subscribe("/imu", 1, onNewIMU);
-    ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom2", 50);
+    ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom_encoder2", 50);
     tf::TransformBroadcaster odom_broadcaster;
 
     double x = 0.0;
@@ -191,8 +191,8 @@ int main(int argc, char** argv)
             //first, we'll publish the transform over tf
             geometry_msgs::TransformStamped odom_trans;
             odom_trans.header.stamp = current_time;
-            odom_trans.header.frame_id = "odom";
-            odom_trans.child_frame_id = "base_link";
+            odom_trans.header.frame_id = "map";
+            odom_trans.child_frame_id = "odom";
 
             odom_trans.transform.translation.x = x;
             odom_trans.transform.translation.y = y;
@@ -205,7 +205,7 @@ int main(int argc, char** argv)
             //next, we'll publish the odometry message over ROS
             nav_msgs::Odometry odom;
             odom.header.stamp = current_time;
-            odom.header.frame_id = "odom";
+            odom.header.frame_id = "map";
 
             //set the position
             odom.pose.pose.position.x = x;
@@ -214,7 +214,7 @@ int main(int argc, char** argv)
             odom.pose.pose.orientation = odom_quat;
 
             //set the velocity
-            odom.child_frame_id = "base_link";
+            odom.child_frame_id = "odom";
             odom.twist.twist.linear.x = vx;
             odom.twist.twist.linear.y = vy;
             odom.twist.twist.angular.z = omega;

@@ -6,8 +6,6 @@ Example launch file: launches the scan matcher with pre-recorded data
     <arg name="IS_TWISTSTAMPED" default="true" />
     <arg name="publish_covariance" default="false"/>
 
-    #### set up data playback from bag #############################
-    <param name="/use_sim_time" value="true"/>
     <param name="/stamped_vel" value="$(arg IS_TWISTSTAMPED)"/>
 
     <node pkg="daart" type="scan_copy" name="scan_copy" />

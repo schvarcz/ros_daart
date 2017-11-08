@@ -39,8 +39,8 @@ void onNewOdom(const nav_msgs::Odometry odom_msg)
     //first, we'll publish the transform over tf
     geometry_msgs::TransformStamped odom_trans;
     odom_trans.header.stamp = odom_msg.header.stamp;
-    odom_trans.header.frame_id = "odom_imu";
-    odom_trans.child_frame_id = "base_link_imu";
+    odom_trans.header.frame_id = "map";
+    odom_trans.child_frame_id = "odom_imu";
 
     odom_trans.transform.translation.x = x;
     odom_trans.transform.translation.y = y;
@@ -54,7 +54,7 @@ void onNewOdom(const nav_msgs::Odometry odom_msg)
     //next, we'll publish the odometry message over ROS
     nav_msgs::Odometry odom;
     odom.header.stamp = odom_msg.header.stamp;
-    odom.header.frame_id = "odom_imu";
+    odom.header.frame_id = "map";
 
     //set the position
     odom.pose.pose.position.x = x;
@@ -63,7 +63,7 @@ void onNewOdom(const nav_msgs::Odometry odom_msg)
     odom.pose.pose.orientation = odom_quat;
 
     //set the velocity
-    odom.child_frame_id = "base_link";
+    odom.child_frame_id = "odom_imu";
     odom.twist.twist.linear.x = odom_msg.twist.twist.linear.x;
     odom.twist.twist.linear.y = odom_msg.twist.twist.linear.y;
     odom.twist.twist.angular.z = omega;
