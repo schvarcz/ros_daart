@@ -8,6 +8,7 @@ def cleanBagFile(fileName):
 
     newFileName = fileName[:-4] + "-b.bag"
 
+    print fileName, " -> ", newFileName
 
     newBag = Bag(newFileName, 'w')
 
