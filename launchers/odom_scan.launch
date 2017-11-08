@@ -11,9 +11,6 @@ Example launch file: launches the scan matcher with pre-recorded data
     <param name="/stamped_vel" value="$(arg IS_TWISTSTAMPED)"/>
 
     <node pkg="daart" type="scan_copy" name="scan_copy" />
-    <!-- <node pkg="tf" type="static_transform_publisher" name="laser2base" args="0 0 0 0 0 0  base_link_scan laser_odom 1000" /> -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="laser2base2" args="0 0 0 0 0 0  base_link laser 1000" /> -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="odom2map" args="0 0 0 0 0 0  map odom_scan 1000" /> -->
 
     #### start the laser scan_matcher ##############################
     <group if="$(arg publish_covariance)">
