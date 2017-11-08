@@ -25,11 +25,11 @@ teleop:
       -
         axis: 1
         target: linear.x
-        scale: 2
+        scale: 0.2
       -
         axis: 2
         target: angular.z
-        scale: -3
+        scale: 3
       -
         axis: 0
         target: linear.y
