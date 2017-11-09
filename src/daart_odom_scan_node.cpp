@@ -17,6 +17,7 @@ public:
         sub1 = n.subscribe(ns+"/odom_encoder", 100, &MergeOdom::odomCallback, this);
         sub2 = n.subscribe(ns+"/pose2D", 100, &MergeOdom::poseCallback, this);
         odom_pub = n.advertise<nav_msgs::Odometry>(ns+"/odom", 50);
+        last_time = ros::Time::now();
     }
 
     void poseCallback(const geometry_msgs::Pose2D pose2d_msg)
