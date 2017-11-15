@@ -1,9 +1,10 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <sensor_msgs/LaserScan.h>
 #include <tf/transform_broadcaster.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <iostream>
 
 template <typename T> int sgn(T val)
@@ -34,15 +35,21 @@ public:
     {
         linearVel = 0.2; rotationVel = 1.4; goalAcceptedDistance = 0.05; omegaAcceptedDistance = M_PI/90;
         stopTime = 5000000;
+        scanVX = 0; scanVY = 0;
+        forceGoalVector = 5; fovObstacleAvoidance = M_PI/5;
+        minRangeScan = 0.15; maxRangeScan = 1;
+        useObstacleAvoidance = true;
 
         ros::NodeHandle nodeLocal("~");
 
         std::string ns = ros::this_node::getNamespace();
-        sub = n.subscribe(ns+"/odom", 100, &WaypointNAV::odomCallback, this);
+        sub1 = n.subscribe(ns+"/odom", 100, &WaypointNAV::odomCallback, this);
+        sub2 = n.subscribe(ns+"/scan", 100, &WaypointNAV::scanCallback, this);
 
         cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
         global_goal_pub = n.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 50);
         local_goal_pub = n.advertise<geometry_msgs::PoseStamped>("/move_base_simple/local/goal", 50);
+        oa_local_goal_pub = n.advertise<geometry_msgs::PoseStamped>("/move_base_simple/local/goal_oa", 50);
 
 
         robotPose.position.x = 7.5;
@@ -54,6 +61,11 @@ public:
         goalAcceptedDistance = nodeLocal.param("goalAcceptedDistance", goalAcceptedDistance);
         omegaAcceptedDistance = nodeLocal.param("omegaAcceptedDistance", omegaAcceptedDistance);
         stopTime = nodeLocal.param("stopTime", stopTime);
+        forceGoalVector = nodeLocal.param("forceGoalVector", forceGoalVector);
+        fovObstacleAvoidance = nodeLocal.param("fovObstacleAvoidance", fovObstacleAvoidance);
+        minRangeScan = nodeLocal.param("minRangeScan", minRangeScan);
+        maxRangeScan = nodeLocal.param("maxRangeScan", maxRangeScan);
+        useObstacleAvoidance = nodeLocal.param("useObstacleAvoidance", useObstacleAvoidance);
 
         robotPose.position.x = nodeLocal.param("robotX", robotPose.position.x);
         robotPose.position.y = nodeLocal.param("robotY", robotPose.position.y);
@@ -78,6 +90,9 @@ public:
         while(n.ok())
         {
             double angleGoal = desiredRotation(goals[idxGoal][0]-robotPose.position.x, goals[idxGoal][1]-robotPose.position.y, quaternionToYaw(robotPose.orientation));
+
+            if (useObstacleAvoidance)
+                angleGoal = obstacleAvoidanceGoal(angleGoal);
 
             ROS_INFO("RobotsPose: %f, %f", robotPose.position.x, robotPose.position.y);
             ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
@@ -106,8 +121,17 @@ public:
             }
 
             cmd_pub.publish(cmd_vel);
-            local_goal_pub.publish( createPoseLocalGoal(angleGoal) );
             global_goal_pub.publish( createPoseGlobalGoal(goals[idxGoal][0], goals[idxGoal][1]) );
+            if (useObstacleAvoidance)
+            {
+                local_goal_pub.publish( createPoseLocalGoal(desiredRotation(goals[idxGoal][0]-robotPose.position.x, goals[idxGoal][1]-robotPose.position.y, quaternionToYaw(robotPose.orientation))) );
+                oa_local_goal_pub.publish( createPoseLocalGoal(angleGoal) );
+            }
+            else
+            {
+                local_goal_pub.publish( createPoseLocalGoal(angleGoal) );
+                oa_local_goal_pub.publish( createPoseLocalGoal( obstacleAvoidanceGoal(angleGoal) ) );
+            }
 
             ROS_INFO("vel = %f\tomega = %f\n",cmd_vel.linear.x, cmd_vel.angular.z);
 
@@ -123,6 +147,31 @@ public:
             ros::spinOnce();
             r.sleep();
         }
+    }
+
+    void scanCallback(const sensor_msgs::LaserScan scan_msg)
+    {
+        double scanVXT = 0, scanVYT = 0;
+
+        int i=0;
+        double angle = scan_msg.angle_min + scan_msg.angle_increment*i;
+        for(; i<scan_msg.ranges.size(); i++)
+        {
+            if ( (fabs(angle) <= fovObstacleAvoidance*0.5)
+                 && (minRangeScan < scan_msg.ranges.at(i)) && (scan_msg.ranges.at(i) < maxRangeScan)
+                 && (scan_msg.ranges.at(i) != std::numeric_limits<float>::infinity())
+                 && !std::isnan(scan_msg.ranges.at(i)) )
+            {
+                scanVXT -= (1-scan_msg.ranges.at(i))*cos(angle);
+                scanVYT -= (1-scan_msg.ranges.at(i))*sin(angle);
+            }
+            angle += scan_msg.angle_increment;
+        }
+        scanVX = scanVXT; scanVY = scanVYT;
+
+        std::cout << "obstacle avoid " << std::endl;
+        std::cout << scanVXT << std::endl;
+        std::cout << scanVYT << std::endl;
     }
 
     void odomCallback(const nav_msgs::Odometry odom)
@@ -165,19 +214,44 @@ public:
         double angleGoal = asin(yGoal*cos(yaw) - xGoal*sin(yaw));
         if (dotGoal < 0)
             angleGoal =  sgn(angleGoal)*M_PI - angleGoal;
+
+        return angleGoal;
+    }
+
+    double obstacleAvoidanceGoal(double angleGoal)
+    {
+        std::cout << "obstacle avoid scan " << std::endl;
+        std::cout << angleGoal << std::endl;
+        double scanVXT = scanVX + forceGoalVector*cos(angleGoal);
+        double scanVYT = scanVY + forceGoalVector*sin(angleGoal);
+
+        double d = sqrt(pow(scanVXT,2)+pow(scanVYT,2));
+        scanVXT /= d;
+        scanVYT /= d;
+        angleGoal = atan2(scanVYT, scanVXT);
+        std::cout << scanVX << std::endl;
+        std::cout << scanVY << std::endl;
+        std::cout << angleGoal << std::endl;
         return angleGoal;
     }
 
 private:
     ros::NodeHandle n;
-    ros::Subscriber sub;
-    ros::Publisher cmd_pub, global_goal_pub, local_goal_pub;
+    ros::Subscriber sub1, sub2;
+    ros::Publisher cmd_pub, global_goal_pub, local_goal_pub, oa_local_goal_pub;
     ros::Time last_time;
-    geometry_msgs::Pose robotPose;
     nav_msgs::Odometry last_odom;
+
     bool first, shouldStop;
+    double scanVX, scanVY;
+
+    //Params
+    geometry_msgs::Pose robotPose;
     double linearVel, rotationVel, goalAcceptedDistance, omegaAcceptedDistance;
     double stopTime;
+    double forceGoalVector, fovObstacleAvoidance;
+    double minRangeScan, maxRangeScan;
+    bool useObstacleAvoidance;
 };
 
 int main(int argc, char** argv)
