@@ -43,8 +43,8 @@ public:
         ros::NodeHandle nodeLocal("~");
 
         std::string ns = ros::this_node::getNamespace();
-        sub1 = n.subscribe(ns+"/odom", 100, &WaypointNAV::odomCallback, this);
-        sub2 = n.subscribe(ns+"/scan", 100, &WaypointNAV::scanCallback, this);
+        sub1 = n.subscribe("/odom", 1000, &WaypointNAV::odomCallback, this);
+        sub2 = n.subscribe("/scan", 1000, &WaypointNAV::scanCallback, this);
 
         cmd_pub = n.advertise<geometry_msgs::Twist>(ns+"/cmd_vel", 50);
         global_goal_pub = n.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 50);
@@ -78,8 +78,8 @@ public:
         double goals[][2] = {
             {  30*squareScale + robotPose.position.x,   0*squareScale + robotPose.position.y},
             {  30*squareScale + robotPose.position.x, -11*squareScale + robotPose.position.y},
-            {  15*squareScale + robotPose.position.x, -11*squareScale + robotPose.position.y},
-            {  15*squareScale + robotPose.position.x,   0*squareScale + robotPose.position.y},
+            {  17*squareScale + robotPose.position.x, -11*squareScale + robotPose.position.y},
+            {  17*squareScale + robotPose.position.x,   0*squareScale + robotPose.position.y},
         };
 
         int idxGoal = 0;
@@ -168,10 +168,6 @@ public:
             angle += scan_msg.angle_increment;
         }
         scanVX = scanVXT; scanVY = scanVYT;
-
-        std::cout << "obstacle avoid " << std::endl;
-        std::cout << scanVXT << std::endl;
-        std::cout << scanVYT << std::endl;
     }
 
     void odomCallback(const nav_msgs::Odometry odom)
