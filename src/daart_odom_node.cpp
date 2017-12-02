@@ -105,28 +105,39 @@ void openConnectionTREX()
 
 int main(int argc, char** argv)
 {
+    double x = 0.0;
+    double y = 0.0;
+    double th = 0.0;
+    double wheelsDistance = 0.255;
+    double wheelsPerimeter = 0.41;
+    double rate = 1.0/300.;
+    double fps = 30;
+
+
     ros::init(argc, argv, "daart_odom_node");
     openConnectionTREX();
     ros::NodeHandle n;
+    ros::NodeHandle nodeLocal("~");
+
+    wheelsDistance = nodeLocal.param("wheelsDistance", wheelsDistance);
+    wheelsPerimeter = nodeLocal.param("wheelsPerimeter", wheelsPerimeter);
+    rate = nodeLocal.param("rate", rate);
+
+    x = nodeLocal.param("robotX", x);
+    y = nodeLocal.param("robotY", y);
+    th = nodeLocal.param("robotTh", th);
+    
+    fps = nodeLocal.param("fps", fps);
+
     std::string ns = ros::this_node::getNamespace();
     ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>(ns+"/odom_encoder", 50);
     tf::TransformBroadcaster odom_broadcaster;
 
-    double x = 0.0;
-    double y = 0.0;
-    double th = 0.0;
-
+    ros::Time current_time, last_time;
     int16_t left_encoder_prev = 0;
     int16_t right_encoder_prev = 0;
-    double wheelsDistance = 0.255;
-    double wheelsPerimeter = 0.40;
-    double rate = 1.0/300.;
     bool firstReading = true;
-
-
-    ros::Time current_time, last_time;
-
-    ros::Rate r(30);
+    ros::Rate r(fps);
     while(n.ok())
     {
         //Read from T-Rex
