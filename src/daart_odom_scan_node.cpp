@@ -10,8 +10,14 @@ class MergeOdom
 {
 public:
 
-    MergeOdom ()
+    MergeOdom () : x(0), y(0), initialTh(0), lastYaw(0), first(true)
     {
+
+        ros::NodeHandle nodeLocal("~");
+        x = nodeLocal.param("robotX", x);
+        y = nodeLocal.param("robotY", y);
+        initialTh = nodeLocal.param("robotTh", initialTh);
+
         std::string ns = ros::this_node::getNamespace();
 
         sub1 = n.subscribe(ns+"/odom_encoder", 100, &MergeOdom::odomCallback, this);
@@ -88,8 +94,8 @@ private:
     tf::TransformBroadcaster odom_broadcaster;
 
     ros::Time last_time;
-    double x=0, y=0, lastYaw=0;
-    bool first = true;
+    double x, y, lastYaw, initialTh;
+    bool first;
     geometry_msgs::Pose2D pose2d;
 };
 
