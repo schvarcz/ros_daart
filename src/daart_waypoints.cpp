@@ -118,6 +118,7 @@ int main(int argc, char** argv)
     int idxGoal = 0;
     ros::Rate r(30);
     geometry_msgs::Twist cmd_vel;
+    sleep(10);
     while(n.ok())
     {
         double angleGoal = desiredRotation(goals[idxGoal][0] - robotPose.position.x, goals[idxGoal][1] - robotPose.position.y, yaw);
@@ -130,7 +131,7 @@ int main(int argc, char** argv)
         if(rotateInPlace && (fabs(angleGoal) < thetaThresInPlaceRotation))
             rotateInPlace = false;
 
-        if(fabs(angleGoal) > omegaAcceptedDistance || rotateInPlace)
+        if(rotateInPlace)//fabs(angleGoal) > omegaAcceptedDistance || 
         {
             cmd_vel.linear.x = 0.0;
             cmd_vel.angular.z = rotationVel*sgn(angleGoal);
