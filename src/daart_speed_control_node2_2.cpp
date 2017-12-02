@@ -135,6 +135,9 @@ void sendVel2TREX(double v1, double v2)
 
     to_send.crc = crc8((unsigned char*) &to_send, sizeof(I2C_input_packet)-1, 0);
 
+    stringstream msgStream;
+    msgStream << "v1: " << v1 << "\t v2:" << v2;
+    ROS_INFO(msgStream.str().c_str());
     if (write(file, &to_send, sizeof(I2C_input_packet)) != sizeof(I2C_input_packet))
         ROS_ERROR("Cannot write bytes");
     ROS_INFO("Sent.");
@@ -152,15 +155,15 @@ void velCallback(const geometry_msgs::Twist vel_msg)
 
 
 
-    if(vel != 0)
+    if(vel != 0.0)
     {
       v2 = (vel*2 + omega*wheelsDistance)/2.0;
       v1 = vel*2  - v2;
     }
     else
     {
-      v1 = omega;
-      v2 = -v1;
+      v2 = omega;
+      v1 = -v2;
     }
 
     if(minDeadZoneMS < v1 && v1 < maxDeadZoneMS)
@@ -175,6 +178,7 @@ void velCallback(const geometry_msgs::Twist vel_msg)
 
     if (bumpV1 || bumpV2)
     {
+        ROS_INFO("Bumping");
         double v1Bumping = v1, v2Bumping = v2;
         if (bumpV1)
         {
@@ -228,9 +232,9 @@ int main(int argc, char **argv)
     bumpingTime = nodeLocal.param("bumpingTime", bumpingTime);
     bumpingShift = nodeLocal.param("bumpingShift", bumpingShift);
 
-    minDeadZoneMS = minDeadZone*rate, maxDeadZoneMS = maxDeadZone*rate;
-    minHystZoneMS = minHystZone*rate, maxHystZoneMS = maxHystZone*rate;
-    minZoneMS = minZone*rate, maxZoneMS = maxZone*rate;
+    minDeadZoneMS = minDeadZone*rate*wheelsPerimeter, maxDeadZoneMS = maxDeadZone*rate*wheelsPerimeter;
+    minHystZoneMS = minHystZone*rate*wheelsPerimeter, maxHystZoneMS = maxHystZone*rate*wheelsPerimeter;
+    minZoneMS = minZone*rate*wheelsPerimeter, maxZoneMS = maxZone*rate*wheelsPerimeter;
 
 
     std::string ns = ros::this_node::getNamespace();
