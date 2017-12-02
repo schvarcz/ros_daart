@@ -21,7 +21,7 @@
     <!--<node pkg="daart" type="daart_speed_control_node2" name="daart_speed_control_node2" output="screen">
         <param name="rate" value="0.007" />
     </node>-->
-    <node pkg="daart" type="daart_speed_control_node2_1" name="daart_speed_control_node2_1" output="screen">
+    <!-- <node pkg="daart" type="daart_speed_control_node2_1" name="daart_speed_control_node2_1" output="screen">
         <param name="bumpingTime" value="100000" />
         <param name="bumpingShift" value="5" />
         <param name="minDeadZone" value="-25" />
@@ -31,6 +31,17 @@
         <param name="minZone" value="-100" />
         <param name="maxZone" value="100" />
         <param name="rate" value="0.007" />
+    </node> -->
+    <node pkg="daart" type="daart_speed_control_node2_2" name="daart_speed_control_node2_2" output="screen">
+        <param name="bumpingTime" value="100000" />
+        <param name="bumpingShift" value="5" />
+        <param name="minDeadZone" value="-25" />
+        <param name="maxDeadZone" value="25" />
+        <param name="minHystZone" value="-40" />
+        <param name="maxHystZone" value="40" />
+        <param name="minZone" value="-100" />
+        <param name="maxZone" value="100" />
+        <param name="rate" value="0.022" />
     </node>
     <!--<node pkg="daart" type="daart_speed_control_node3" name="daart_speed_control_node3" output="screen" />-->
     <!--<node pkg="razor_imu_9dof" type="imu_node.py" name="imu_node" output="screen">

@@ -151,6 +151,7 @@ add_library(crc src/crc.c)
 add_executable(daart_speed_control_node src/daart_speed_control_node.cpp)
 add_executable(daart_speed_control_node2 src/daart_speed_control_node2.cpp)
 add_executable(daart_speed_control_node2_1 src/daart_speed_control_node2_1.cpp)
+add_executable(daart_speed_control_node2_2 src/daart_speed_control_node2_2.cpp)
 add_executable(daart_speed_control_node3 src/daart_speed_control_node3.cpp)
 add_executable(daart_odom_node src/daart_odom_node.cpp)
 add_executable(daart_odom_imu_node src/daart_odom_imu_node.cpp)
@@ -161,6 +162,7 @@ add_executable(daart_waypoints src/daart_waypoints.cpp)
 add_executable(daart_waypoints2 src/daart_waypoints2.cpp)
 add_executable(daart_waypoints3 src/daart_waypoints3.cpp)
 add_executable(daart_waypoints3_1 src/daart_waypoints3_1.cpp)
+add_executable(daart_waypoints3_2 src/daart_waypoints3_2.cpp)
 add_executable(daart_random_walk src/daart_random_walk.cpp)
 add_executable(scan_copy src/scan_copy.cpp)
 # add_executable(robot_pose_iv src/robot_pose_iv.cpp)
@@ -182,6 +184,11 @@ target_link_libraries(daart_speed_control_node2
 )
 
 target_link_libraries(daart_speed_control_node2_1
+   crc
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(daart_speed_control_node2_2
    crc
    ${catkin_LIBRARIES}
 )
@@ -228,6 +235,10 @@ target_link_libraries(daart_waypoints3
 )
 
 target_link_libraries(daart_waypoints3_1
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(daart_waypoints3_2
    ${catkin_LIBRARIES}
 )
 
