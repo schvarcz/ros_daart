@@ -10,7 +10,11 @@
 
     #### ODOM PUBLISHES ####
     <!-- <node pkg="daart" type="daart_odom_imu_node" name="daart_odom_imu_node" />  -->
-    <node pkg="daart" type="daart_odom_node" name="daart_odom_node" output="screen" />
+    <node pkg="daart" type="daart_odom_node" name="daart_odom_node" output="screen">
+        <param name="robotX" value="7.0" />
+        <param name="robotY" value="5" />
+        <param name="robotTh" value="0" />
+    </node>
     <!-- <node pkg="daart" type="daart_odom_node2" name="daart_odom_node2" /> -->
 
     <include file="$(find daart)/launchers/odom_scan.launch" />

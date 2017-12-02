@@ -25,6 +25,10 @@ Example launch file: launches the scan matcher with pre-recorded data
         <param name="use_imu" value="false"/>
     </node>
 
-    <node pkg="daart" type="daart_odom_scan_node" name="daart_odom_scan_node" output="screen" />
+    <node pkg="daart" type="daart_odom_scan_node" name="daart_odom_scan_node" output="screen" >
+        <param name="robotX" value="7.0" />
+        <param name="robotY" value="5" />
+        <param name="robotTh" value="0" />
+    </node>
 
 </launch>
