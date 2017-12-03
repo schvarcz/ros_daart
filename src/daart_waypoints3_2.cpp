@@ -98,7 +98,7 @@ public:
             ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
             ROS_INFO("Distance: %f, Bearing: %f",distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]), angleGoal);
 
-            if(fabs(angleGoal) > omegaAcceptedDistance)
+            if (fabs(angleGoal) > omegaAcceptedDistance)
             {
                 cmd_vel.linear.x  = 0.0;
                 cmd_vel.angular.z = rotationVel*sgn(angleGoal);
@@ -106,10 +106,10 @@ public:
             else if (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) > goalAcceptedDistance)
             {
                 cmd_vel.linear.x  = linearVel;
-                cmd_vel.angular.z = angleGoal;
+                cmd_vel.angular.z = 2*angleGoal;
             }
 
-            if (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) < goalAcceptedDistance)
+            if (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) <= goalAcceptedDistance)
             {
                 cmd_vel.linear.x  = 0.0;
                 cmd_vel.angular.z = 0.0;
@@ -206,10 +206,11 @@ public:
     {
         double mA = distance(0, 0, xGoal, yGoal);
         xGoal /= mA; yGoal /= mA;
-        double dotGoal = xGoal*cos(yaw) + yGoal*sin(yaw);
         double angleGoal = asin(yGoal*cos(yaw) - xGoal*sin(yaw));
+
+        double dotGoal = xGoal*cos(yaw) + yGoal*sin(yaw);
         if (dotGoal < 0)
-            angleGoal =  sgn(angleGoal)*M_PI - angleGoal;
+            angleGoal =  M_PI - angleGoal;
 
         return angleGoal;
     }
