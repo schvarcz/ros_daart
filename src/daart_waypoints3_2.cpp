@@ -98,7 +98,8 @@ public:
             ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
             ROS_INFO("Distance: %f, Bearing: %f",distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]), angleGoal);
 
-            if (fabs(angleGoal) > omegaAcceptedDistance)
+            if ( (fabs(angleGoal) > 2*omegaAcceptedDistance)
+                || ((fabs(angleGoal) > omegaAcceptedDistance) && (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) > 2*goalAcceptedDistance)) )
             {
                 cmd_vel.linear.x  = 0.0;
                 cmd_vel.angular.z = rotationVel*sgn(angleGoal);
