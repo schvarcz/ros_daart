@@ -92,7 +92,10 @@ public:
             double angleGoal = desiredRotation(goals[idxGoal][0]-robotPose.position.x, goals[idxGoal][1]-robotPose.position.y, quaternionToYaw(robotPose.orientation));
 
             if (useObstacleAvoidance)
+            {
+                ROS_INFO("Using obstacle avoidance.");
                 angleGoal = obstacleAvoidanceGoal(angleGoal);
+            }
 
             ROS_INFO("RobotsPose: %f, %f", robotPose.position.x, robotPose.position.y);
             ROS_INFO("GoalPose: %f, %f", goals[idxGoal][0], goals[idxGoal][1]);
@@ -211,7 +214,7 @@ public:
 
         double dotGoal = xGoal*cos(yaw) + yGoal*sin(yaw);
         if (dotGoal < 0)
-            angleGoal =  M_PI - angleGoal;
+            angleGoal =  sgn(angleGoal)*M_PI - angleGoal;
 
         return angleGoal;
     }
