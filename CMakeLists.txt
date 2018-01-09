@@ -165,6 +165,8 @@ add_executable(daart_waypoints3_1 src/daart_waypoints3_1.cpp)
 add_executable(daart_waypoints3_2 src/daart_waypoints3_2.cpp)
 add_executable(daart_random_walk src/daart_random_walk.cpp)
 add_executable(scan_copy src/scan_copy.cpp)
+add_executable(pose2odom src/pose2odom.cpp)
+add_executable(daart_odom_clean_node src/daart_odom_clean_node.cpp)
 # add_executable(robot_pose_iv src/robot_pose_iv.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -247,6 +249,14 @@ target_link_libraries(daart_random_walk
 )
 
 target_link_libraries(scan_copy
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(pose2odom
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(daart_odom_clean_node
    ${catkin_LIBRARIES}
 )
 
