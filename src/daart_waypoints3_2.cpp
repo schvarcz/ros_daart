@@ -87,6 +87,7 @@ public:
         geometry_msgs::Twist cmd_vel;
 
         std::cout << "Goal sent " << std::endl;
+        sleep(3);
         while(n.ok())
         {
             double angleGoal = desiredRotation(goals[idxGoal][0]-robotPose.position.x, goals[idxGoal][1]-robotPose.position.y, quaternionToYaw(robotPose.orientation));
