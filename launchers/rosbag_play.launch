@@ -1,6 +1,8 @@
 <launch>
     <!-- <arg name="bagfile" default="/home/schvarcz/Dropbox/Doutorado-ENSTA/Daart/DaartTests/2017-05-13/2017-05-13-15-33-11-atan.bag" />-->
-    <arg name="bagfile" default="/home/schvarcz/Dropbox/Doutorado-ENSTA/Daart/DaartTests/2017-07-20/2016-02-11-20-19-14-c.bag" />
+    <!-- <arg name="bagfile" default="/home/schvarcz/Dropbox/Doutorado-ENSTA/Daart/DaartTests/2017-07-20/2016-02-11-20-19-14-c.bag" /> -->
+    <arg name="bagfile" default="/home/schvarcz/Dropbox/Doutorado-ENSTA/Daart/DaartTests/2017-12-03/2017-12-03-22-14-33.bag" />
+    <!-- <arg name="bagfile" default="/home/schvarcz/Dropbox/Doutorado-ENSTA/Daart/DaartTests/2017-12-03/2017-12-03-22-17-30.bag" /> -->
 
     #### set up data playback from bag #############################
     <param name="/use_sim_time" value="true"/>
