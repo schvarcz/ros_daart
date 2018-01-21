@@ -17,7 +17,7 @@
     </node>
     <!-- <node pkg="daart" type="daart_odom_node2" name="daart_odom_node2" /> -->
 
-    <include file="$(find daart)/launchers/odom_scan.launch" />
+    <!--<include file="$(find daart)/launchers/odom_scan.launch" />-->
 
 
     #### SPEED CONTROLS PUBLISHES ####
@@ -54,7 +54,4 @@
 
 
     #### TF PUBLISHES ####
-    <node pkg="tf" type="static_transform_publisher" name="baselnk2odom" args="0 0 0 0 0 0  odom base_link 1000" />
-    <node pkg="tf" type="static_transform_publisher" name="lasercopy2odom2odomscan" args="0 0 0 0 0 0  odom_scan laser_copy2odom 1000" />
-    <node pkg="tf" type="static_transform_publisher" name="laser2baselink" args="0 0 0 0 0 0  base_link laser 1000" />
 </launch>

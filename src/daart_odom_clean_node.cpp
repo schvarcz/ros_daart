@@ -12,7 +12,7 @@ class OdomClean
 {
 public:
 
-    OdomClean () : topic2clean("/odom_encoder"), topicPub("/odom"), childFrame("odom"), frameId("map")
+    OdomClean () : topic2clean("/odom_encoder"), topicPub("/odom"), childFrame("base_link"), frameId("odom")
     {
         ros::NodeHandle nodeLocal("~");
 

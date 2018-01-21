@@ -21,7 +21,7 @@ class Pose2Odom
 {
 public:
 
-    Pose2Odom () : x(0), y(0), initialTh(0), child_frame_id("odom"), frame_id("map")
+    Pose2Odom () : x(0), y(0), initialTh(0), child_frame_id("base_link"), frame_id("odom")
     {
         std::string ns = ros::this_node::getNamespace();
 
