@@ -9,6 +9,8 @@ Panels:
         - /TF1
         - /TF1/Frames1
         - /Odometry2
+        - /Marker1/Status1
+        - /Marker1/Namespaces1
       Splitter Ratio: 0.510067105
     Tree Height: 775
   - Class: rviz/Selection
@@ -58,6 +60,12 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: true
+        base_link_encoder2:
+          Value: true
+        base_link_polygonLoc:
+          Value: true
+        base_link_scan:
+          Value: true
         laser:
           Value: true
         laser_copy2odom:
@@ -65,6 +73,8 @@ Visualization Manager:
         map:
           Value: true
         odom:
+          Value: true
+        odom_encoder:
           Value: true
         odom_encoder2:
           Value: true
@@ -83,13 +93,15 @@ Visualization Manager:
             base_link:
               laser:
                 {}
-          odom_encoder2:
-            {}
-          odom_polygonLoc:
-            {}
-          odom_scan:
-            laser_copy2odom:
+            odom_encoder:
               {}
+            odom_encoder2:
+              base_link_encoder2:
+                {}
+            odom_scan:
+              base_link_scan:
+                laser_copy2odom:
+                  {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.100000001
@@ -203,7 +215,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.100000001
@@ -219,7 +231,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.100000001
@@ -234,6 +246,14 @@ Visualization Manager:
       Shape: Arrow
       Topic: /pose_stamped
       Unreliable: false
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /move_base_simple/goal_path
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
@@ -258,7 +278,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
+      Angle: -1.86264515e-08
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
@@ -268,11 +288,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 22.9031296
+      Scale: 37.677494
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 6.70994139
-      Y: -3.03064108
+      X: 10.1652298
+      Y: 5.66112757
     Saved: ~
 Window Geometry:
   Displays:
