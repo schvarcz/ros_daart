@@ -115,7 +115,7 @@ public:
         sleep(3);
         while(n.ok())
         {
-            double angleGoal = desiredRotation(goals[idxGoal][0]-robotPose.position.x, goals[idxGoal][1]-robotPose.position.y, quaternionToYaw(robotPose.orientation));
+            double angleGoal = desiredRotation(quaternionToYaw(robotPose.orientation));
 
             if (useObstacleAvoidance)
             {
@@ -139,7 +139,7 @@ public:
                 cmd_vel.angular.z = 2*angleGoal;
             }
 
-            if (distance(robotPose.position.x, robotPose.position.y, goals[idxGoal][0], goals[idxGoal][1]) <= goalAcceptedDistance)
+            if (goalReached())
             {
                 cmd_vel.linear.x  = 0.0;
                 cmd_vel.angular.z = 0.0;
@@ -156,9 +156,10 @@ public:
 
             cmd_pub.publish(cmd_vel);
             global_goal_pub.publish( createPoseGlobalGoal(goals[idxGoal][0], goals[idxGoal][1]) );
+
             if (useObstacleAvoidance)
             {
-                local_goal_pub.publish( createPoseLocalGoal(desiredRotation(goals[idxGoal][0]-robotPose.position.x, goals[idxGoal][1]-robotPose.position.y, quaternionToYaw(robotPose.orientation))) );
+                local_goal_pub.publish( createPoseLocalGoal(desiredRotation(quaternionToYaw(robotPose.orientation))) );
                 oa_local_goal_pub.publish( createPoseLocalGoal(angleGoal) );
             }
             else
@@ -249,6 +250,18 @@ public:
         return angleGoal;
     }
 
+    double desiredRotation(double yaw)
+    {
+        double desiredAngle = getDesiredAngle();
+        double angleGoal = asin(sin(desiredAngle)*cos(yaw) - cos(desiredAngle)*sin(yaw));
+
+        double dotGoal = cos(desiredAngle)*cos(yaw) + sin(desiredAngle)*sin(yaw);
+        if (dotGoal < 0)
+            angleGoal =  sgn(angleGoal)*M_PI - angleGoal;
+
+        return angleGoal;
+    }
+
     double obstacleAvoidanceGoal(double angleGoal)
     {
         std::cout << "obstacle avoid scan " << std::endl;
@@ -266,12 +279,12 @@ public:
         return angleGoal;
     }
 
-    bool keepRunning()
+    bool goalReached()
     {
         geometry_msgs::Point pt1 = goalLine.points[0];
         geometry_msgs::Point pt2 = goalLine.points[1];
         double x = robotPose.position.x, y = robotPose.position.y, x1 = pt1.x, y1 = pt1.y, x2 = pt2.x, y2 = pt2.y; //Goal line
-        return ((x-x1)*(y2-y1) - (y-y1)*(x2-x1)) < 0; //When it becomes positive, we passed the line
+        return ((x-x1)*(y2-y1) - (y-y1)*(x2-x1)) > 0; //When it becomes positive, we passed the line
     }
 
     double getAngle()
