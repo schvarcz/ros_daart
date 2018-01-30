@@ -107,12 +107,16 @@ public:
         ros::Rate r(30);
         geometry_msgs::Twist cmd_vel;
 
+        for(int i =0; i<3;i++)
+        {
+          sleep(3);
+          ros::spinOnce();
+        }
         createGoal(goals[idxGoal][0], goals[idxGoal][1]);
         path_goal_pub.publish(baseLine);
         path_goal_pub.publish(goalLine);
         std::cout << "Goal sent " << std::endl;
 
-        sleep(3);
         while(n.ok())
         {
             double angleGoal = desiredRotation(quaternionToYaw(robotPose.orientation));
