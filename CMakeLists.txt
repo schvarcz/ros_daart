@@ -168,6 +168,7 @@ add_executable(daart_random_walk src/daart_random_walk.cpp)
 add_executable(scan_copy src/scan_copy.cpp)
 add_executable(pose2odom src/pose2odom.cpp)
 add_executable(daart_odom_clean_node src/daart_odom_clean_node.cpp)
+add_executable(daart_odom_trans_node src/daart_odom_trans_node.cpp)
 # add_executable(robot_pose_iv src/robot_pose_iv.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -262,6 +263,10 @@ target_link_libraries(pose2odom
 )
 
 target_link_libraries(daart_odom_clean_node
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(daart_odom_trans_node
    ${catkin_LIBRARIES}
 )
 
