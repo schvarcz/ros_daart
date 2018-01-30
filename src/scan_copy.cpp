@@ -1,21 +1,29 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <string>
 
 using namespace ros;
+using namespace std;
 
 class ScanCopier{
 
 public:
-    ScanCopier()
+    ScanCopier() : topic2copy("/scan"), topicPub("/scan_copy2odom"), frameId("laser_copy2odom")
     {
-        sub = n.subscribe("/scan", 1, &ScanCopier::onNewScan, this);
-        scan_pub = n.advertise<sensor_msgs::LaserScan>("/scan_copy2odom", 50);
+        ros::NodeHandle nodeLocal("~");
+
+        topic2copy = nodeLocal.param("topic2copy", topic2copy);
+        topicPub = nodeLocal.param("topicPub", topicPub);
+        frameId = nodeLocal.param("frameId", frameId);
+
+        sub = n.subscribe(topic2copy, 1, &ScanCopier::onNewScan, this);
+        scan_pub = n.advertise<sensor_msgs::LaserScan>(topicPub, 50);
     }
 
     void onNewScan(const sensor_msgs::LaserScan scan_msg)
     {
         sensor_msgs::LaserScan scan_msg2 = scan_msg;
-        scan_msg2.header.frame_id = "laser_copy2odom";
+        scan_msg2.header.frame_id = frameId;
         scan_pub.publish(scan_msg2);
     }
 
@@ -23,6 +31,7 @@ private:
     NodeHandle n;
     Subscriber sub;
     Publisher scan_pub;
+    string topic2copy, topicPub, frameId;
 };
 
 int main(int argc, char **argv)
