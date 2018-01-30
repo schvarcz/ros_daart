@@ -58,28 +58,30 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_frame_amcl:
+          Value: true
         base_link:
           Value: true
         base_link_encoder2:
           Value: false
-        base_link_polygonLoc:
-          Value: true
         base_link_scan:
           Value: false
         laser:
           Value: false
         laser_copy2odom:
           Value: false
+        laser_scan:
+          Value: true
         map:
           Value: true
         odom:
+          Value: true
+        odom_amcl:
           Value: true
         odom_encoder:
           Value: false
         odom_encoder2:
           Value: false
-        odom_polygonLoc:
-          Value: true
         odom_scan:
           Value: false
       Marker Scale: 2
@@ -90,18 +92,12 @@ Visualization Manager:
       Tree:
         map:
           odom:
-            base_link:
-              laser:
-                {}
             odom_encoder:
               {}
             odom_encoder2:
-              base_link_encoder2:
-                {}
+              {}
             odom_scan:
-              base_link_scan:
-                laser_copy2odom:
-                  {}
+              {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.100000001
@@ -252,7 +248,7 @@ Visualization Manager:
       Marker Topic: /move_base_simple/goal_path
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Alpha: 0.699999988
@@ -265,6 +261,52 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: true
+    - Alpha: 1
+      Arrow Length: 0.300000012
+      Axes Length: 0.300000012
+      Axes Radius: 0.00999999978
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
+      Name: PoseArray
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Arrow (Flat)
+      Topic: /particlecloud
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.100000001
+      Class: rviz/PoseWithCovariance
+      Color: 255; 25; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.300000012
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: false
+      Head Length: 0.300000012
+      Head Radius: 0.100000001
+      Name: PoseWithCovariance
+      Shaft Length: 1
+      Shaft Radius: 0.0500000007
+      Shape: Arrow
+      Topic: /amcl_pose
+      Unreliable: false
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -298,7 +340,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 31.4626694
+      Scale: 31.7498703
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
       X: 8.57094193
